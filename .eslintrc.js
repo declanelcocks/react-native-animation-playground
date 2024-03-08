@@ -55,19 +55,6 @@ module.exports = {
 		'import/prefer-default-export': 'off',
 		'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
 		'react/display-name': 'off',
-		'prettier/prettier': [
-			'error',
-			{
-				printWidth: 80,
-				endOfLine: 'lf',
-				tabWidth: 2,
-				indentStyle: 'space',
-				useTabs: true,
-				arrowParens: 'avoid',
-				bracketSameLine: false,
-				singleQuote: true,
-				trailingComma: 'all',
-			},
-		],
+		'prettier/prettier': ['error'],
 	},
 };
