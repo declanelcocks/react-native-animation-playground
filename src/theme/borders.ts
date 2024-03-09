@@ -2,8 +2,8 @@ import { config } from '@/theme/_config';
 
 import type {
 	BorderColors,
-	BorderWidths,
 	BorderRadius,
+	BorderWidths,
 } from '@/types/theme/borders';
 import type { UnionConfiguration } from '@/types/theme/config';
 import type { ViewStyle } from 'react-native';
@@ -44,7 +44,7 @@ export const generateBorderRadius = () => {
 export const generateBorderWidths = () => {
 	return config.borders.widths.reduce((acc, width) => {
 		return Object.assign(acc, {
-			[`${width}`]: {
+			[`w_${width}`]: {
 				borderWidth: width,
 			},
 			[`top_${width}`]: {

@@ -3,18 +3,31 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 import { useTheme } from '@/theme';
 
-import Example from '@/screens/Example/Example';
+import Home from '@/screens/Home/Home';
+import Telegram from '@/screens/Telegram/Telegram';
 import type { ApplicationStackParamList } from '@/types/navigation';
 
 const Stack = createStackNavigator<ApplicationStackParamList>();
 
 function ApplicationNavigator() {
-	const { variant, navigationTheme } = useTheme();
+	const { navigationTheme, fonts } = useTheme();
 
 	return (
 		<NavigationContainer theme={navigationTheme}>
-			<Stack.Navigator key={variant} screenOptions={{ headerShown: false }}>
-				<Stack.Screen name="Example" component={Example} />
+			<Stack.Navigator
+				screenOptions={{
+					headerTitleStyle: {
+						...fonts.gray400,
+						fontWeight: fonts.bold.fontWeight,
+					},
+				}}
+			>
+				<Stack.Screen name="Home" component={Home} />
+				<Stack.Screen
+					name="Telegram"
+					component={Telegram}
+					options={{ headerShown: false }}
+				/>
 			</Stack.Navigator>
 		</NavigationContainer>
 	);
