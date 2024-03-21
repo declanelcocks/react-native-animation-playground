@@ -22,7 +22,9 @@ function Home() {
 						Welcome!
 					</Text>
 
-					<Link to="/Telegram">Telegram</Link>
+					<Link to="/Telegram" style={[fonts.gray400]}>
+						Telegram
+					</Link>
 				</View>
 			</ScrollView>
 		</SafeScreen>

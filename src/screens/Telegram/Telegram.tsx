@@ -11,6 +11,7 @@ import {
 } from '@react-navigation/drawer';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { PropsWithChildren } from 'react';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 function Telegram() {
 	const { gutters, fonts } = useTheme();
@@ -33,19 +34,23 @@ const Drawer = createDrawerNavigator();
 function CustomDrawerContent(
 	props: PropsWithChildren<DrawerContentComponentProps>,
 ) {
-	const { gutters, fonts, borders, changeTheme, variant } = useTheme();
+	const { gutters, fonts, borders, toggleTheme, toggleThemeState } = useTheme();
 	const navigation = useNavigation<NavigationProp<ApplicationStackParamList>>();
 
-	const toggleTheme = () => {
-		changeTheme(variant === 'default' ? 'dark' : 'default');
-	};
+	const tap = Gesture.Tap()
+		.runOnJS(true)
+		.onStart(e => {
+			if (!toggleThemeState.active) {
+				toggleTheme(e.absoluteX, e.absoluteY);
+			}
+		});
 
 	return (
 		<DrawerContentScrollView {...props}>
-			<View style={[gutters.margin_8]}>
-				<TouchableOpacity
-					onPress={toggleTheme}
+			<GestureDetector gesture={tap}>
+				<View
 					style={[
+						gutters.margin_8,
 						gutters.padding_16,
 						borders.w_2,
 						borders.rounded_8,
@@ -53,8 +58,8 @@ function CustomDrawerContent(
 					]}
 				>
 					<Text style={{ color: fonts.gray400.color }}>Change theme</Text>
-				</TouchableOpacity>
-			</View>
+				</View>
+			</GestureDetector>
 
 			<View style={[gutters.margin_8]}>
 				<TouchableOpacity

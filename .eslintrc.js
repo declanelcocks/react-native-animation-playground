@@ -56,5 +56,6 @@ module.exports = {
 		'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
 		'react/display-name': 'off',
 		'prettier/prettier': ['error'],
+		'react-native/no-inline-styles': 'off',
 	},
 };
