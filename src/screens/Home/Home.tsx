@@ -25,6 +25,18 @@ function Home() {
 					<Link to="/Telegram" style={[fonts.gray400]}>
 						Telegram
 					</Link>
+
+					<Link to="/Progress" style={[fonts.gray400]}>
+						Progress
+					</Link>
+
+					<Link to="/SdfCircle" style={[fonts.gray400]}>
+						Signed Distance Function: Circle
+					</Link>
+
+					<Link to="/SdfLine" style={[fonts.gray400]}>
+						Signed Distance Function: Line
+					</Link>
 				</View>
 			</ScrollView>
 		</SafeScreen>

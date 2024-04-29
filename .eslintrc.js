@@ -57,5 +57,7 @@ module.exports = {
 		'react/display-name': 'off',
 		'prettier/prettier': ['error'],
 		'react-native/no-inline-styles': 'off',
+		'react/style-prop-object': 'warn',
+		'@typescript-eslint/no-unsafe-assignment': 'warn',
 	},
 };
