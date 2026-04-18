@@ -1,4 +1,4 @@
 export const enum Paths {
-  Example = 'example',
-  Startup = 'startup',
+  Home = 'Home',
+  Progress = 'Progress',
 }
