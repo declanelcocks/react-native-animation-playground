@@ -7,6 +7,7 @@ export type RootScreenProps<
 > = StackScreenProps<RootStackParamList, S>;
 
 export type RootStackParamList = {
+  [Paths.Chart]: undefined;
   [Paths.Home]: undefined;
   [Paths.Progress]: undefined;
 };

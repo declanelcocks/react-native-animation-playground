@@ -87,9 +87,7 @@ const fromCircle = (center: Vector, r: number) => {
   return Skia.XYWHRect(center.x - r, center.y - r, r * 2, r * 2);
 };
 
-export function Ring(props: PropsWithChildren<Props>) {
-  const { center, ring, strokeWidth } = props;
-
+export function Ring({ center, ring, strokeWidth }: PropsWithChildren<Props>) {
   const trim = useSharedValue(0);
   const circleRadius = ring.size / 2 - strokeWidth / 2;
 

@@ -44,6 +44,7 @@ export function Rings() {
         return (
           <Ring
             center={center}
+            // eslint-disable-next-line react/no-array-index-key
             key={index}
             ring={ring}
             strokeWidth={strokeWidth}

@@ -64,6 +64,9 @@ export default defineConfig(
       '@typescript-eslint/consistent-type-definitions': [ERROR, 'type'],
       '@typescript-eslint/dot-notation': [ERROR, { allowKeywords: true }],
       '@typescript-eslint/no-empty-function': OFF,
+      '@typescript-eslint/no-explicit-any': OFF,
+      '@typescript-eslint/no-non-null-assertion': OFF,
+      '@typescript-eslint/no-unsafe-assignment': OFF,
       '@typescript-eslint/no-useless-default-assignment': OFF,
       '@typescript-eslint/restrict-template-expressions': OFF,
       'import/no-unresolved': OFF, // handled by TypeScript
@@ -133,8 +136,10 @@ export default defineConfig(
           functions: 'defaultArguments',
         },
       ],
+      'react/style-prop-object': [ERROR, { allow: ['Path'] }],
       'unicorn/filename-case': OFF,
       'unicorn/no-keyword-prefix': OFF,
+      'unicorn/no-null': OFF,
       'unicorn/no-useless-undefined': OFF,
       'unicorn/prefer-top-level-await': 0, // not valid on RN for the moment
       'unicorn/prevent-abbreviations': [

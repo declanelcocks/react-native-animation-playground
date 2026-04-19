@@ -24,6 +24,10 @@ function Example() {
         <Link screen={Paths.Progress} style={[fonts.gray400]}>
           Progress
         </Link>
+
+        <Link screen={Paths.Chart} style={[fonts.gray400]}>
+          Chart
+        </Link>
       </View>
     </ScrollView>
   );
