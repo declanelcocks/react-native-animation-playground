@@ -6,6 +6,7 @@ import { Paths } from '@/navigation/paths';
 import type { RootStackParamList } from '@/navigation/types';
 import { useTheme } from '@/theme';
 
+import Chart from '@/screens/Chart/Chart';
 import Home from '@/screens/Home';
 import { Progress } from '@/screens/Progress';
 
@@ -20,6 +21,7 @@ function ApplicationNavigator() {
         <Stack.Navigator key={variant}>
           <Stack.Screen component={Home} name={Paths.Home} />
           <Stack.Screen component={Progress} name={Paths.Progress} />
+          <Stack.Screen component={Chart} name={Paths.Chart} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

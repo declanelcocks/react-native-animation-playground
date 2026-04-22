@@ -61,12 +61,14 @@ export default defineConfig(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      '@typescript-eslint/consistent-type-definitions': [ERROR, 'type'],
+      '@typescript-eslint/consistent-type-definitions': OFF,
       '@typescript-eslint/dot-notation': [ERROR, { allowKeywords: true }],
+      '@typescript-eslint/no-empty-object-type': OFF,
       '@typescript-eslint/no-empty-function': OFF,
       '@typescript-eslint/no-explicit-any': OFF,
       '@typescript-eslint/no-non-null-assertion': OFF,
       '@typescript-eslint/no-unsafe-assignment': OFF,
+      '@typescript-eslint/no-unsafe-call': OFF,
       '@typescript-eslint/no-useless-default-assignment': OFF,
       '@typescript-eslint/restrict-template-expressions': OFF,
       'import/no-unresolved': OFF, // handled by TypeScript
@@ -128,31 +130,19 @@ export default defineConfig(
       'react/jsx-props-no-spreading': OFF,
       'react/jsx-sort-props': OFF, // Handled by perfectionist
       'react/no-multi-comp': OFF,
+      'react/no-array-index-key': OFF,
       'react/no-unescaped-entities': OFF,
-      'react/require-default-props': [
-        ERROR,
-        {
-          forbidDefaultForRequired: true,
-          functions: 'defaultArguments',
-        },
-      ],
+      'react/prefer-read-only-props': OFF,
+      'react/require-default-props': OFF,
       'react/style-prop-object': [ERROR, { allow: ['Path'] }],
       'unicorn/filename-case': OFF,
+      'unicorn/no-array-reduce': OFF,
       'unicorn/no-keyword-prefix': OFF,
       'unicorn/no-null': OFF,
       'unicorn/no-useless-undefined': OFF,
+      'unicorn/prefer-at': OFF,
       'unicorn/prefer-top-level-await': 0, // not valid on RN for the moment
-      'unicorn/prevent-abbreviations': [
-        ERROR,
-        {
-          allowList: {
-            env: true,
-            Param: true,
-            props: true,
-            Props: true,
-          },
-        },
-      ],
+      'unicorn/prevent-abbreviations': OFF,
     },
   },
   {

@@ -123,3 +123,11 @@ export type TimeSeriesData = {
   timestamp: Scalars['Float'];
   value?: Maybe<Scalars['Float']>;
 };
+
+export interface TimeSlice {
+  __typename?: 'TimeSlice';
+  historicalPrices?: Quote[];
+  technicalAnalysis?: Maybe<Maybe<TechnicalAnalysis>[]>;
+  timeSliceAmount?: Maybe<Scalars['Float']>;
+  timeSliceType?: Maybe<Scalars['String']>;
+}
