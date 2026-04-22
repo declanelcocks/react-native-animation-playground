@@ -1,3 +1,4 @@
+import { interpolatePath } from 'd3-interpolate-path';
 import { PropsWithChildren } from 'react';
 import { View } from 'react-native';
 import Animated, {
@@ -6,7 +7,6 @@ import Animated, {
   SharedValue,
   useAnimatedProps,
 } from 'react-native-reanimated';
-import { interpolatePath } from 'react-native-redash';
 import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
@@ -42,8 +42,8 @@ export function LineChart({
   const theme = useTheme();
 
   const animatedProps = useAnimatedProps(() => {
-    const previousChart = charts[previousChartIndex.get()];
-    const currentChart = charts[currentChartIndex.get()];
+    const previousChart = charts[previousChartIndex.value];
+    const currentChart = charts[currentChartIndex.value];
 
     // When 1 datapoint and rerender before mockpoint, interpolatePath() breaks
     // TODO: find a better workaround
@@ -54,22 +54,18 @@ export function LineChart({
       };
     }
 
-    const d = interpolatePath(
-      transition.get(),
-      [0, 1],
-      [
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        !previousChart.path && currentChart.path
-          ? currentChart.path
-          : previousChart.path,
-        currentChart.path,
-      ],
+    const interpolator = interpolatePath(
+      !previousChart.rawPath && currentChart.rawPath
+        ? currentChart.rawPath
+        : previousChart.rawPath,
+      currentChart.rawPath,
     );
+    const d = interpolator(transition.value);
 
     return {
       d,
       stroke: interpolateColor(
-        transition.get(),
+        transition.value,
         [0, 1],
         [theme.colors.green500, theme.colors.red500],
       ),
@@ -87,25 +83,21 @@ export function LineChart({
       };
     }
 
-    const d = interpolatePath(
-      transition.get(),
-      [0, 1],
-      [
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        !previousChart.path && currentChart.path
-          ? currentChart.path
-          : previousChart.path,
-        currentChart.path,
-      ],
+    const interpolator = interpolatePath(
+      !previousChart.rawPath && currentChart.rawPath
+        ? currentChart.rawPath
+        : previousChart.rawPath,
+      currentChart.rawPath,
     );
+    const d = interpolator(transition.value);
 
     const opacity =
-      currentTrend.get() === 'positive'
-        ? previousTrend?.get() === 'negative'
-          ? interpolate(transition.get(), [0, 1], [0, 1])
+      currentTrend.value === 'positive'
+        ? previousTrend?.value === 'negative'
+          ? interpolate(transition.value, [0, 1], [0, 1])
           : 1
-        : previousTrend?.get() === 'positive'
-          ? interpolate(transition.get(), [0, 1], [1, 0])
+        : previousTrend?.value === 'positive'
+          ? interpolate(transition.value, [0, 1], [1, 0])
           : 0;
 
     return {
@@ -125,25 +117,21 @@ export function LineChart({
       };
     }
 
-    const d = interpolatePath(
-      transition.get(),
-      [0, 1],
-      [
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        !previousChart.path && currentChart.path
-          ? currentChart.path
-          : previousChart.path,
-        currentChart.path,
-      ],
+    const interpolator = interpolatePath(
+      !previousChart.rawPath && currentChart.rawPath
+        ? currentChart.rawPath
+        : previousChart.rawPath,
+      currentChart.rawPath,
     );
+    const d = interpolator(transition.value);
 
     const opacity =
-      currentTrend.get() === 'negative'
-        ? previousTrend?.get() === 'positive'
-          ? interpolate(transition.get(), [0, 1], [0, 1])
+      currentTrend.value === 'negative'
+        ? previousTrend?.value === 'positive'
+          ? interpolate(transition.value, [0, 1], [0, 1])
           : 1
-        : previousTrend?.get() === 'negative'
-          ? interpolate(transition.get(), [0, 1], [1, 0])
+        : previousTrend?.value === 'negative'
+          ? interpolate(transition.value, [0, 1], [1, 0])
           : 0;
 
     return {

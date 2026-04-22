@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Platform, Text, View } from 'react-native';
 import {
   SharedValue,
@@ -54,9 +55,7 @@ function QuoteSectionAnimated({
   } = quote ?? {};
 
   const lastPrice = useDerivedValue(() => {
-    const showQuote =
-      !isCursorActive.value && typeof quoteLastPrice === 'number';
-
+    const showQuote = !isCursorActive.value && quoteLastPrice;
     return round(
       showQuote ? quoteLastPrice : currentPrice.value?.close,
       currentPrice.value?.currencySymbol === 'HKD' ||
@@ -172,19 +171,10 @@ function QuoteSectionAnimated({
   });
 
   const quoteLastDate = useDerivedValue(() => {
-    if (!quote?.date) return;
+    if (!quote?.timestamp) return;
 
-    const date = new Date(quote.date);
-    const dateString = date.toLocaleDateString('en', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-    const timeString = date.toLocaleTimeString('en', {
-      hour: 'numeric',
-      minute: 'numeric',
-    });
-
+    const dateString = dayjs(quote.timestamp).format('DD-MM-YYYY');
+    const timeString = dayjs(quote.timestamp).format('HH:mm');
     const result = `${
       quoteIsRealTime ? realTimeQuoteMsg : delayedQuoteMsg
     }${dateString}${comma}${timeString}`;
@@ -196,36 +186,18 @@ function QuoteSectionAnimated({
     if (!isCursorActive.value && chartType === 'line')
       return quoteLastDate.value;
 
-    const currentPriceDate = currentPrice.get()?.date;
+    if (!currentPrice.value?.date || currentPrice.value.isMockData) return '';
 
-    if (!currentPriceDate || currentPrice.get()?.isMockData) return '';
-
-    const date = new Date(currentPriceDate);
-
+    const date = dayjs(currentPrice.value.date);
     let relativeDateTimeLabel;
-
     if (chartIndex.value === 0) {
-      const dateString = date.toLocaleDateString('en', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-      const timeString = date.toLocaleTimeString('en', {
-        hour: 'numeric',
-        minute: 'numeric',
-      });
+      const dateString = date.format('DD-MM-YYYY');
+      const timeString = date.format('HH:mm');
       relativeDateTimeLabel = `${dateString}${comma}${timeString}`;
     } else if (chartIndex.value === 1 || chartIndex.value === 2) {
-      relativeDateTimeLabel = date.toLocaleString('en', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
+      relativeDateTimeLabel = date.format('DD-MM-YYYY');
     } else {
-      relativeDateTimeLabel = date.toLocaleString('en', {
-        month: 'short',
-        year: 'numeric',
-      });
+      relativeDateTimeLabel = date.format('MM-YYYY');
     }
 
     const messages = {
@@ -235,10 +207,9 @@ function QuoteSectionAnimated({
     };
 
     let result = '';
-    const quoteType = currentPrice.get()?.quoteType;
 
-    if (isCursorActive.value && !!quoteType) {
-      result = messages[quoteType];
+    if (isCursorActive.value && currentPrice.value.quoteType) {
+      result = messages[currentPrice.value.quoteType];
     } else if (chartType === 'candlestick' && relativeDateTimeLabel) {
       result = messages.close;
     }
@@ -314,7 +285,6 @@ function QuoteSectionAnimated({
               paddingHorizontal: 16,
             }}
           >
-            {/* Bid */}
             <View style={{ alignItems: 'center', flex: 1 }}>
               <Text
                 style={{ color: theme.colors.purple50, fontWeight: 'bold' }}
@@ -327,8 +297,6 @@ function QuoteSectionAnimated({
                 </Text>
               </View>
             </View>
-
-            {/* Price + change */}
             <View style={{ alignItems: 'center', flex: 2 }}>
               <Label
                 style={{
@@ -344,8 +312,6 @@ function QuoteSectionAnimated({
                 <Label text={dateRange} />
               </View>
             </View>
-
-            {/* Ask */}
             <View style={{ alignItems: 'center', flex: 1 }}>
               <Text
                 style={{ color: theme.colors.purple50, fontWeight: 'bold' }}

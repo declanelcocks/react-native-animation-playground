@@ -161,7 +161,7 @@ const dataFormatter = (data: Quote[], valueKey: string): FormattedItem[] => {
       return {
         ...d,
         close: Number(d.close),
-        date: d.date ? new Date(d.date).valueOf() : null,
+        date: Number(d.timestamp),
         high: Number(d.high),
         low: Number(d.low),
         open: Number(d.open),
@@ -174,7 +174,7 @@ const dataFormatter = (data: Quote[], valueKey: string): FormattedItem[] => {
         value: Number(d[valueKey as keyof Quote]),
       };
     })
-    .filter((d) => !!d.value && !!d.date);
+    .filter((d) => d.value);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return formattedData as any;
@@ -451,11 +451,9 @@ export const formatTimeSlice = (
 
   // Filter out prices in case historical prices are more updated than the quote
   // Sometimes AAStocks historical prices updates faster then quote
-  historicalPrices = historicalPrices?.filter((p) => {
-    if (!p.date) return false;
-
-    return dayjs(p.date).valueOf() <= dayjs(quote.date).valueOf();
-  });
+  historicalPrices = historicalPrices?.filter(
+    (p) => p.timestamp <= quote.timestamp,
+  );
 
   // When there is only one price, add mock data. (need 2 points to form a line)
   if (historicalPrices?.length === 1 && chartType === 'line') {

@@ -72,7 +72,7 @@ export default defineConfig(
       '@typescript-eslint/no-useless-default-assignment': OFF,
       '@typescript-eslint/restrict-template-expressions': OFF,
       'import/no-unresolved': OFF, // handled by TypeScript
-      'no-console': [ERROR, { allow: ['warn', 'error'] }],
+      'no-console': [ERROR, { allow: ['log', 'warn', 'error'] }],
       'perfectionist/sort-imports': [
         'error',
         {

@@ -41,16 +41,16 @@ export function LineChartCursor({
 }: Props) {
   const theme = useTheme();
   const cursorStyle = useAnimatedStyle(() => {
-    if (!isCursorActive.get()) {
+    if (!isCursorActive.value) {
       return { opacity: 0 };
     }
 
-    const translateX = translation.x.get() - CURSOR_SIZE / 2;
-    const translateY = translation.y.get() - CURSOR_SIZE / 2;
+    const translateX = translation.x.value - CURSOR_SIZE / 2;
+    const translateY = translation.y.value - CURSOR_SIZE / 2;
 
     return {
       backgroundColor:
-        currentTrend.get() === 'positive'
+        currentTrend.value === 'positive'
           ? theme.colors.green500
           : theme.colors.red500,
       opacity: 1,
@@ -59,12 +59,12 @@ export function LineChartCursor({
   });
 
   const verticalIndicatorStyle = useAnimatedStyle(() => {
-    if (isCursorActive.get()) {
-      const translateX = translation.x.get();
+    if (isCursorActive.value) {
+      const translateX = translation.x.value;
 
       return {
         backgroundColor:
-          currentTrend.get() === 'positive'
+          currentTrend.value === 'positive'
             ? theme.colors.green500
             : theme.colors.red500,
         opacity: 1,
@@ -79,12 +79,12 @@ export function LineChartCursor({
   });
 
   const horizontalIndicatorStyle = useAnimatedStyle(() => {
-    if (isCursorActive.get()) {
-      const translateY = translation.y.get();
+    if (isCursorActive.value) {
+      const translateY = translation.y.value;
 
       return {
         backgroundColor:
-          currentTrend.get() === 'positive'
+          currentTrend.value === 'positive'
             ? theme.colors.green500
             : theme.colors.red500,
         opacity: 1,

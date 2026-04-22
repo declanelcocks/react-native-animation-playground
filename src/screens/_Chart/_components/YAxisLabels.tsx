@@ -1,6 +1,7 @@
-import React from 'react';
-import { SharedValue } from 'react-native-reanimated';
+import React, { useState } from 'react';
+import { SharedValue, useDerivedValue } from 'react-native-reanimated';
 import { Line, Text } from 'react-native-svg';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { useTheme } from '@/theme';
 
@@ -16,8 +17,17 @@ interface Props {
 
 export function YAxisLabels({ charts, currentChartIndex, width }: Props) {
   const theme = useTheme();
+  const [chartIndex, setChartIndex] = useState<number>();
 
-  return charts[currentChartIndex.get()].yAxisLabels?.map(
+  useDerivedValue(() => {
+    if (currentChartIndex.value !== chartIndex) {
+      scheduleOnRN(() => {
+        setChartIndex(currentChartIndex.value);
+      });
+    }
+  }, [chartIndex]);
+
+  return charts[currentChartIndex.value].yAxisLabels?.map(
     ({ prominent, value, y }, i) => {
       return (
         <React.Fragment key={i}>
