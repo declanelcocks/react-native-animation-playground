@@ -96,7 +96,7 @@ export function CurrentPriceData({
   });
 
   return (
-    <View>
+    <View style={{ alignItems: 'center' }}>
       <Label text={lastPrice} />
       <Label text={dateRange} />
       <Label text={dateLabel as any} />

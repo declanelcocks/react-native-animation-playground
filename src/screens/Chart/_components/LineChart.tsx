@@ -71,7 +71,14 @@ export function LineChart({
       stroke: interpolateColor(
         transition.get(),
         [0, 1],
-        [theme.colors.green500, theme.colors.red500],
+        [
+          previousChart.trend === 'positive'
+            ? theme.colors.green500
+            : theme.colors.red500,
+          currentChart.trend === 'positive'
+            ? theme.colors.green500
+            : theme.colors.red500,
+        ],
       ),
     };
   });
@@ -158,6 +165,7 @@ export function LineChart({
         <YAxisLabels
           charts={charts}
           currentChartIndex={currentChartIndex}
+          height={height}
           width={width}
         />
 

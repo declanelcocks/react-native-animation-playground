@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -6,12 +6,14 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import { clamp, getYForX, useVector } from 'react-native-redash';
 
-import CurrentPriceData from './_components/CurrentPrice';
+import CurrentPriceData from './_components/CurrentPriceData';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
+import TimeSliceButton from './_components/TimeSliceButton';
 import { hkQuote, oneDayTimeSlice, oneMonthTimeSlice } from './data';
 import {
   buildCharts,
@@ -36,7 +38,6 @@ function Example() {
   const previousChartIndex = useSharedValue(0);
   const currentChartIndex = useSharedValue(0);
   const quote = useSharedValue(currentQuote);
-  // const currentPrice = useSharedValue<FormattedItem | null>(null);
 
   const { mainCharts: charts } = useMemo(
     () => buildCharts({ height, width }, data, type),
@@ -126,16 +127,60 @@ function Example() {
       );
     });
 
+  const updateTimeSlice = useCallback(
+    (index: number) => {
+      if (index === currentChartIndex.get()) return;
+
+      previousChartIndex.set(currentChartIndex.get());
+
+      currentChartIndex.set(index);
+
+      transition.set(0);
+      transition.set(
+        withTiming(1, {
+          duration: 150,
+        }),
+      );
+
+      if (charts[index]?.data?.length) {
+        translation.x.set(width);
+
+        translation.y.set(
+          withTiming(getYForX(charts[index].path, width) ?? 0, {
+            duration: 150,
+          }),
+        );
+
+        currentPrice.set(charts[index].getItemAtX(width));
+      } else {
+        translation.x.set(width);
+        translation.y.set(0);
+
+        currentPrice.set(null);
+      }
+    },
+    [
+      charts,
+      currentPrice,
+      currentChartIndex,
+      previousChartIndex,
+      transition,
+      translation,
+    ],
+  );
+
   return (
     <View style={{ padding: 16 }}>
-      <CurrentPriceData
-        chartIndex={currentChartIndex}
-        charts={charts}
-        chartType={type}
-        currentPrice={currentPrice}
-        isCursorActive={isCursorActive}
-        quote={currentQuote}
-      />
+      <View style={{ marginBottom: 16 }}>
+        <CurrentPriceData
+          chartIndex={currentChartIndex}
+          charts={charts}
+          chartType={type}
+          currentPrice={currentPrice}
+          isCursorActive={isCursorActive}
+          quote={currentQuote}
+        />
+      </View>
 
       <Animated.View style={chartDisplayProps}>
         <View>
@@ -165,6 +210,19 @@ function Example() {
           </LineChart>
         </View>
       </Animated.View>
+
+      <View style={{ flexDirection: 'row', gap: 16, marginTop: 16 }}>
+        {charts.map((chart, index) => (
+          <TimeSliceButton
+            currentChartIndex={currentChartIndex}
+            key={index}
+            onChangeTimeSlice={updateTimeSlice}
+            timeSliceIndex={index}
+            timeSliceLabel={chart.dateRangeLabel}
+            transition={transition}
+          />
+        ))}
+      </View>
     </View>
   );
 }
