@@ -4,11 +4,13 @@ import dayjs from 'dayjs';
 import { Extrapolate, interpolate } from 'react-native-reanimated';
 import { parse, Path as RedashPath } from 'react-native-redash';
 
+import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
+import { formatNumber } from './formatters';
 import { Quote, TimeSlice } from './types';
 
 export type ChartType = 'candlestick' | 'line';
 
-export const X_MARGIN = 35;
+export const X_MARGIN = 32;
 export const Y_MARGIN = 4;
 
 export interface Chart {
@@ -20,7 +22,6 @@ export interface Chart {
   rawPath: string;
   scaleBody(v: number): number;
   scaleY: ScaleLinear<number, number>;
-  scaleYVolume: ScaleLinear<number, number>;
   timeSliceLabel: string;
   trend: 'negative' | 'positive';
   yAxisLabels?: YAxisLabel[];
@@ -45,115 +46,9 @@ export interface FormattedItem {
 }
 
 export interface YAxisLabel {
-  prominent?: boolean;
   value: string;
   y: number;
 }
-
-const noValueConstant = '-';
-export const hiddenValueConstant = '***';
-
-const isNumber = (num?: number | string) => {
-  'worklet';
-  return typeof num === 'number' || (typeof num === 'string' && !!num);
-};
-
-export const round = (
-  value?: null | number | string,
-  precision = 0,
-  removeInsignificantZeros?: boolean,
-): string => {
-  'worklet';
-
-  if (value == null || !isNumber(value) || Number.isNaN(Number(value))) {
-    return noValueConstant;
-  }
-
-  const p = Math.pow(10, precision);
-  let result: number | string = (Math.round(Number(value) * p) / p).toFixed(
-    precision,
-  );
-
-  if (removeInsignificantZeros) {
-    result = Number(result);
-  }
-
-  return result.toString().replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
-};
-
-export const pct = (value?: null | number | string): any => {
-  'worklet';
-  return value != null && !Number.isNaN(Number(value))
-    ? `${round(Number(value) * 100, 2)}%`
-    : noValueConstant;
-};
-
-/**
- * Formats a currency
- * @param digits {minIntegerDigits}.{minFractionDigits}-{maxFractionDigits}.
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NumberFormat
- */
-export const formatNumber = (
-  value?: number | string,
-  digits = '1.2-2',
-  options?: { hidden?: boolean; invalidValueMessage?: string },
-) => {
-  if (value == null) {
-    return noValueConstant;
-  }
-
-  // using parseFloat instead of Number() as Number("") returns 0, instead we want NaN
-  const num = typeof value === 'string' ? Number.parseFloat(value) : value;
-
-  if (Number.isNaN(num) && options?.invalidValueMessage)
-    return options.invalidValueMessage;
-
-  if (options?.hidden) {
-    return hiddenValueConstant;
-  }
-
-  const splitDigits = digits.split('.');
-  const splitFractions = splitDigits[1].split('-');
-  const minimumIntegerDigits = Number(splitDigits[0]);
-  const minimumFractionDigits = Number(splitFractions[0]);
-  const maximumFractionDigits = Number(splitFractions[1]);
-
-  return new Intl.NumberFormat(undefined, {
-    maximumFractionDigits,
-    minimumFractionDigits,
-    minimumIntegerDigits,
-  }).format(num);
-};
-
-/**
- * Formats a price with 2 digits for USD or 3 for HKD
- * Optionally prepends the currency
- */
-export const formatPrice = (
-  value?: null | number,
-  currencySymbol?: null | string,
-  currency?: null | string,
-  showDashForZero?: boolean,
-) => {
-  if (value == null) {
-    return noValueConstant;
-  }
-
-  if (showDashForZero && value === 0) {
-    return noValueConstant;
-  }
-
-  const number = formatNumber(
-    value,
-    currencySymbol === 'USD' ? '1.2-2' : '1.3-3',
-  );
-
-  return number === noValueConstant
-    ? number
-    : currency
-      ? `${currency} ${number}`
-      : number;
-};
 
 const dataFormatter = (data: Quote[], valueKey: string): FormattedItem[] => {
   const formattedData = data
@@ -196,19 +91,10 @@ const priceYDomain = (prices: FormattedItem[]): [number, number] => {
   return [Math.min(priceYDomain[0]), Math.max(priceYDomain[1])];
 };
 
-/**
- * The y-domain of the volume chart is just the min / max volume
- */
-const volumeYDomain = (items: FormattedItem[]): [number, number] => {
-  const volumes = items.map((i) => i.volume).filter((v) => v !== undefined);
-  return [Math.min(...volumes), Math.max(...volumes)];
-};
-
 const buildYAxisLabels = (
   min: number,
   max: number,
   height: number,
-  currencySymbol: string,
 ): { value: string; y: number }[] => {
   const range = max - min;
   let stepSize = Math.pow(10, Math.floor(Math.log10(range)));
@@ -223,7 +109,7 @@ const buildYAxisLabels = (
   ) {
     const y = height - ((value - min) / range) * height;
     yAxisLabels.push({
-      value: formatNumber(value, currencySymbol === 'HKD' ? '1.3-3' : '1.2-2'),
+      value: formatNumber(value, '1.2-2'),
       y,
     });
   }
@@ -237,7 +123,6 @@ const buildYAxisLabels = (
 const buildPath2 = (
   size: { height: number; width: number },
   items: FormattedItem[],
-  offset: number,
   yDomain: [number, number],
   type: ChartType,
   smooth?: boolean,
@@ -249,12 +134,16 @@ const buildPath2 = (
 } => {
   const xScaleDomain = items.map((p) => p.date.toString());
   let xScaleRange;
+  const effectiveWidth = size.width - Y_AXIS_LABELS_WIDTH;
+
   if (type == 'candlestick') {
-    const step = size.width / (items.length + offset);
-    xScaleRange = items.map((_, i) => step / 2 + step * (i + offset));
+    const step = effectiveWidth / items.length;
+    xScaleRange = items.map(
+      (_, i) => Y_AXIS_LABELS_WIDTH + step / 2 + step * i,
+    );
   } else {
-    const step = size.width / (items.length + offset - 1 || 1);
-    xScaleRange = items.map((_, i) => step * (i + offset));
+    const step = effectiveWidth / (items.length - 1 || 1);
+    xScaleRange = items.map((_, i) => Y_AXIS_LABELS_WIDTH + step * i);
   }
 
   const scaleX = scaleOrdinal().domain(xScaleDomain).range(xScaleRange);
@@ -268,16 +157,14 @@ const buildPath2 = (
   );
 
   const formattedData = [...items];
-  for (let i = 0; i < offset; i++) {
-    formattedData.unshift({ date: null, value: null });
-  }
+
   /**
    * Given x within the specified domain,
    * calculate a normalized value to find the closest element in the array
    */
   const getItemAtX = (x: number) => {
     'worklet';
-    const [domainStart, domainEnd] = [0, size.width - 1];
+    const [domainStart, domainEnd] = [Y_AXIS_LABELS_WIDTH, size.width];
     const xNormal = (x - domainStart) / (domainEnd - domainStart);
     const closestIndex = Math.floor(xNormal * (formattedData.length - 1));
     return formattedData[closestIndex];
@@ -293,33 +180,18 @@ const buildPath2 = (
 };
 
 const buildPathForChart = (
-  size: { height: number; volumeChartHeight: number; width: number },
+  size: { height: number; width: number },
   items: FormattedItem[],
   yDomain: [number, number],
   type: ChartType,
-  currencySymbol: string,
 ): {
   data: FormattedItem[];
   getItemAtX(x: number): FormattedItem;
   rawPath: string;
   scaleBody(v: number): number;
   scaleY: ScaleLinear<number, number>;
-  scaleYVolume: ScaleLinear<number, number>;
   yAxisLabels: { value: string; y: number }[];
 } => {
-  const yDomainVolume = volumeYDomain(items);
-
-  // Mutiply by 0.9 so that a volume bar with non zero minimum volume
-  // for a timeslice is still visible.
-  const scaleYVolume = scaleLinear()
-    .domain(yDomainVolume)
-    .range([
-      yDomainVolume[0] == 0
-        ? size.volumeChartHeight
-        : size.volumeChartHeight * 0.95,
-      yDomainVolume[1] == 0 ? size.volumeChartHeight : 0,
-    ]);
-
   const scaleBody = (value: number): number => {
     'worklet';
 
@@ -332,17 +204,11 @@ const buildPathForChart = (
     );
   };
 
-  const yAxisLabels = buildYAxisLabels(
-    yDomain[0],
-    yDomain[1],
-    size.height,
-    currencySymbol,
-  );
+  const yAxisLabels = buildYAxisLabels(yDomain[0], yDomain[1], size.height);
 
   const result = {
-    ...buildPath2(size, items, 0, yDomain, type),
+    ...buildPath2(size, items, yDomain, type),
     scaleBody,
-    scaleYVolume,
     yAxisLabels,
   };
 
@@ -356,11 +222,9 @@ export interface BuildChartsResult {
 export const buildCharts = (
   size: {
     height: number;
-    volumeChartHeight: number;
     width: number;
   },
   items: TimeSlice[],
-  currencySymbol: string,
   type: ChartType,
 ): BuildChartsResult => {
   const result = items.reduce(
@@ -378,7 +242,6 @@ export const buildCharts = (
         rawPath: null,
         scaleBody: scaleLinear(),
         scaleY: scaleLinear(),
-        scaleYVolume: scaleLinear(),
         timeSliceLabel,
         trend: null,
       };
@@ -395,13 +258,7 @@ export const buildCharts = (
       const priceData = dataFormatter(prices, 'close');
       const yDomain = priceYDomain(priceData);
 
-      const chart = buildPathForChart(
-        size,
-        priceData,
-        yDomain,
-        type,
-        currencySymbol,
-      );
+      const chart = buildPathForChart(size, priceData, yDomain, type);
 
       if (!chart.rawPath) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

@@ -4,9 +4,7 @@ import { Line, Text } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
-import { Chart, X_MARGIN, Y_MARGIN } from '../utils';
-
-const AXIS_FONT_SIZE = 8;
+import { Chart, Y_MARGIN } from '../utils';
 
 interface Props {
   charts: Chart[];
@@ -14,40 +12,35 @@ interface Props {
   width: number;
 }
 
+export const Y_AXIS_LABELS_WIDTH = 32;
+
 export function YAxisLabels({ charts, currentChartIndex, width }: Props) {
   const theme = useTheme();
 
-  return charts[currentChartIndex.get()].yAxisLabels?.map(
-    ({ prominent, value, y }, i) => {
-      return (
-        <React.Fragment key={i}>
-          <Text
-            dx={X_MARGIN / 2}
-            fontSize={AXIS_FONT_SIZE}
-            fontWeight="100"
-            stroke={theme.colors.gray50}
-            textAnchor="middle"
-            transform={[
-              { translateY: y + AXIS_FONT_SIZE * 0.25 },
-              { translateX: width },
-            ]}
-          >
-            {value}
-          </Text>
-          <Line
-            stroke={prominent ? theme.colors.gray50 : theme.colors.gray400}
-            strokeDasharray={4}
-            strokeWidth={prominent ? 2 : 1}
-            transform={[{ translateY: Y_MARGIN }]}
-            x1={0}
-            x2={width}
-            y1={y}
-            y2={y}
-          />
-        </React.Fragment>
-      );
-    },
-  );
+  return charts[currentChartIndex.get()].yAxisLabels?.map(({ value, y }, i) => {
+    return (
+      <React.Fragment key={i}>
+        <Text
+          fontSize={8}
+          fontWeight="100"
+          stroke={theme.colors.gray400}
+          textAnchor="start"
+          transform={[{ translateY: y + 6 }]}
+        >
+          {value}
+        </Text>
+        <Line
+          stroke={theme.colors.gray400}
+          strokeDasharray={4}
+          transform={[{ translateY: Y_MARGIN }]}
+          x1={Y_AXIS_LABELS_WIDTH}
+          x2={width}
+          y1={y}
+          y2={y}
+        />
+      </React.Fragment>
+    );
+  });
 }
 
 export default YAxisLabels;

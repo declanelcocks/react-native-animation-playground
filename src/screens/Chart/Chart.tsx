@@ -1,22 +1,27 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
 import { useMemo } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  SharedValue,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
-import { getYForX, useVector } from 'react-native-redash';
+import { clamp, getYForX, useVector } from 'react-native-redash';
 
+import CurrentPriceData from './_components/CurrentPrice';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import { hkQuote, oneDayTimeSlice, oneMonthTimeSlice } from './data';
-import { buildCharts, FormattedItem, formatTimeSlice, Y_MARGIN } from './utils';
+import {
+  buildCharts,
+  FormattedItem,
+  formatTimeSlice,
+  X_MARGIN,
+  Y_MARGIN,
+} from './utils';
 
 const height = 200;
-const volumeChartHeight = 50;
 const width = Dimensions.get('window').width - 32;
 const type: 'candlestick' | 'line' = 'line';
 const currentQuote = { ...hkQuote };
@@ -34,14 +39,7 @@ function Example() {
   // const currentPrice = useSharedValue<FormattedItem | null>(null);
 
   const { mainCharts: charts } = useMemo(
-    () =>
-      buildCharts(
-        { height, volumeChartHeight, width },
-        data,
-
-        currentQuote.currencySymbol as any,
-        type,
-      ),
+    () => buildCharts({ height, width }, data, type),
     [data, type],
   );
 
@@ -50,7 +48,7 @@ function Example() {
     charts[currentChartIndex.value].data.length > 0
       ? (getYForX(charts[currentChartIndex.value].path, width) ?? 0)
       : 0,
-  );
+  ) as { x: SharedValue<number>; y: SharedValue<number> };
 
   const currentPrice = useSharedValue<FormattedItem | null>(
     charts[currentChartIndex.value].getItemAtX(width),
@@ -89,29 +87,39 @@ function Example() {
   });
 
   const onGestureEvent = Gesture.Pan()
-    .activeOffsetX([0, 0])
+    .activeOffsetX(32)
     .activeOffsetY([0, 0])
     .minDistance(0)
-    .onUpdate(({ x }) => {
+    .onBegin(({ x }) => {
       if (x < 0) return;
       isCursorActive.set(true);
-      translation.x.set(Math.min(x, width));
+      translation.x.set(clamp(x, X_MARGIN, width));
       translation.y.set(
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        getYForX(charts[currentChartIndex.get()].path, translation.x.get()) +
-          Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
+          0) + Y_MARGIN,
       );
       currentPrice.set(
         charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
       );
     })
-    .onEnd(() => {
+    .onUpdate(({ x }) => {
+      if (x < 0) return;
+      isCursorActive.set(true);
+      translation.x.set(clamp(x, X_MARGIN, width));
+      translation.y.set(
+        (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
+          0) + Y_MARGIN,
+      );
+      currentPrice.set(
+        charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
+      );
+    })
+    .onFinalize(() => {
       isCursorActive.set(false);
       translation.x.set(width);
       translation.y.set(
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        getYForX(charts[currentChartIndex.get()].path, translation.x.get()) +
-          Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
+          0) + Y_MARGIN,
       );
       currentPrice.set(
         charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
@@ -119,37 +127,44 @@ function Example() {
     });
 
   return (
-    <View>
-      <View style={{ padding: 16 }}>
-        <Animated.View style={chartDisplayProps}>
-          <View>
-            <LineChart
-              charts={charts}
-              currentChartIndex={currentChartIndex}
-              currentTrend={currentTrend}
-              height={height}
-              previousChartIndex={previousChartIndex}
-              previousTrend={previousTrend}
-              transition={transition}
-              width={width}
-            >
-              <View style={StyleSheet.absoluteFill}>
-                <GestureDetector gesture={onGestureEvent}>
-                  <Animated.View style={StyleSheet.absoluteFill}>
-                    <LineChartCursor
-                      currentTrend={currentTrend}
-                      height={height}
-                      isCursorActive={isCursorActive}
-                      translation={translation}
-                      width={width}
-                    />
-                  </Animated.View>
-                </GestureDetector>
-              </View>
-            </LineChart>
-          </View>
-        </Animated.View>
-      </View>
+    <View style={{ padding: 16 }}>
+      <CurrentPriceData
+        chartIndex={currentChartIndex}
+        charts={charts}
+        chartType={type}
+        currentPrice={currentPrice}
+        isCursorActive={isCursorActive}
+        quote={currentQuote}
+      />
+
+      <Animated.View style={chartDisplayProps}>
+        <View>
+          <LineChart
+            charts={charts}
+            currentChartIndex={currentChartIndex}
+            currentTrend={currentTrend}
+            height={height}
+            previousChartIndex={previousChartIndex}
+            previousTrend={previousTrend}
+            transition={transition}
+            width={width}
+          >
+            <View style={StyleSheet.absoluteFill}>
+              <GestureDetector gesture={onGestureEvent}>
+                <Animated.View style={StyleSheet.absoluteFill}>
+                  <LineChartCursor
+                    currentTrend={currentTrend}
+                    height={height}
+                    isCursorActive={isCursorActive}
+                    translation={translation}
+                    width={width}
+                  />
+                </Animated.View>
+              </GestureDetector>
+            </View>
+          </LineChart>
+        </View>
+      </Animated.View>
     </View>
   );
 }

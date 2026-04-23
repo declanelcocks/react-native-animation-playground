@@ -13,7 +13,7 @@ import { useTheme } from '@/theme';
 
 import { Chart, X_MARGIN, Y_MARGIN } from '../utils';
 import Gradient from './Gradient';
-import YAxisLabels from './YAxisLabels';
+import YAxisLabels, { Y_AXIS_LABELS_WIDTH } from './YAxisLabels';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -77,8 +77,8 @@ export function LineChart({
   });
 
   const animatedPositiveGradientProps = useAnimatedProps(() => {
-    const previousChart = charts[previousChartIndex.value];
-    const currentChart = charts[currentChartIndex.value];
+    const previousChart = charts[previousChartIndex.get()];
+    const currentChart = charts[currentChartIndex.get()];
 
     if (!currentChart.rawPath || currentChart.rawPath.endsWith('Z')) {
       return {
@@ -109,14 +109,14 @@ export function LineChart({
           : 0;
 
     return {
-      d: `${d} L ${width} ${height} L 0 ${height}`,
+      d: `${d} L ${width} ${height} L ${Y_AXIS_LABELS_WIDTH} ${height}`,
       opacity,
     };
   });
 
   const animatedNegativeGradientProps = useAnimatedProps(() => {
-    const previousChart = charts[previousChartIndex.value];
-    const currentChart = charts[currentChartIndex.value];
+    const previousChart = charts[previousChartIndex.get()];
+    const currentChart = charts[currentChartIndex.get()];
 
     if (!currentChart.rawPath || currentChart.rawPath.endsWith('Z')) {
       return {
@@ -147,7 +147,7 @@ export function LineChart({
           : 0;
 
     return {
-      d: `${d} L ${width} ${height} L 0 ${height}`,
+      d: `${d} L ${width} ${height} L ${Y_AXIS_LABELS_WIDTH} ${height}`,
       opacity,
     };
   });
