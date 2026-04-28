@@ -1,6 +1,5 @@
 import { scaleLinear, ScaleLinear, scaleOrdinal } from 'd3-scale';
 import { curveLinear, curveMonotoneX, line } from 'd3-shape';
-import dayjs from 'dayjs';
 import { Extrapolate, interpolate } from 'react-native-reanimated';
 import { parse, Path as RedashPath } from 'react-native-redash';
 
@@ -16,7 +15,7 @@ export const Y_MARGIN = 4;
 export interface Chart {
   data: FormattedItem[];
   dateRangeLabel: string;
-  getItemAtX(x: number): FormattedItem;
+  getItemAtX(x: number): FormattedItemWithIndex;
   intervalLabel: string;
   path: RedashPath;
   rawPath: string;
@@ -43,6 +42,10 @@ export interface FormattedItem {
   value: number;
   volume?: number;
   xAxisPct?: number;
+}
+
+export interface FormattedItemWithIndex extends FormattedItem {
+  index: number;
 }
 
 export interface YAxisLabel {
@@ -78,7 +81,9 @@ const dataFormatter = (data: Quote[], valueKey: string): FormattedItem[] => {
 const getHighLowDomain = (items: FormattedItem[]): [number, number] => {
   'worklet';
 
-  const values = items.flatMap(({ high, low }) => [high, low]);
+  const values = items
+    .flatMap(({ high, low }) => [high, low])
+    .filter((v): v is number => v !== undefined);
   return [Math.min(...values), Math.max(...values)];
 };
 
@@ -127,8 +132,8 @@ const buildPath2 = (
   type: ChartType,
   smooth?: boolean,
 ): {
-  data: FormattedItem[];
-  getItemAtX(x: number): FormattedItem;
+  data: FormattedItemWithIndex[];
+  getItemAtX(x: number): FormattedItemWithIndex;
   rawPath: string;
   scaleY: ScaleLinear<number, number>;
 } => {
@@ -167,7 +172,7 @@ const buildPath2 = (
     const [domainStart, domainEnd] = [Y_AXIS_LABELS_WIDTH, size.width];
     const xNormal = (x - domainStart) / (domainEnd - domainStart);
     const closestIndex = Math.floor(xNormal * (formattedData.length - 1));
-    return formattedData[closestIndex];
+    return { ...formattedData[closestIndex], index: closestIndex };
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -186,7 +191,7 @@ const buildPathForChart = (
   type: ChartType,
 ): {
   data: FormattedItem[];
-  getItemAtX(x: number): FormattedItem;
+  getItemAtX(x: number): FormattedItemWithIndex;
   rawPath: string;
   scaleBody(v: number): number;
   scaleY: ScaleLinear<number, number>;
@@ -291,48 +296,4 @@ export const buildCharts = (
     { mainCharts: [] },
   );
   return result;
-};
-
-/**
- * Filters prices with timestamp <= quote timestamp.
- * Preps Mock data according to line chart if only 1 data point.
- */
-export const formatTimeSlice = (
-  timeSlice: TimeSlice,
-  quote: null | Quote,
-  chartType: ChartType,
-): TimeSlice => {
-  if (!quote) return timeSlice;
-
-  let historicalPrices = timeSlice.historicalPrices;
-
-  // Filter out prices in case historical prices are more updated than the quote
-  // Sometimes AAStocks historical prices updates faster then quote
-  historicalPrices = historicalPrices?.filter((p) => {
-    if (!p.date) return false;
-
-    return dayjs(p.date).valueOf() <= dayjs(quote.date).valueOf();
-  });
-
-  // When there is only one price, add mock data. (need 2 points to form a line)
-  if (historicalPrices?.length === 1 && chartType === 'line') {
-    const mockDate = dayjs(historicalPrices[0].date).subtract(1, 'hour');
-    historicalPrices = [
-      {
-        ...historicalPrices[0],
-        date: mockDate.toISOString(),
-        isMockData: true,
-        timestamp: mockDate.valueOf(),
-        volume: null,
-      } as Quote,
-      {
-        ...historicalPrices[0],
-      },
-    ];
-  }
-
-  return {
-    ...timeSlice,
-    historicalPrices,
-  };
 };

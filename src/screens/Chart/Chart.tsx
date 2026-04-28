@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Dimensions, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
@@ -10,50 +10,81 @@ import Animated, {
 } from 'react-native-reanimated';
 import { clamp, getYForX, useVector } from 'react-native-redash';
 
+import CandlestickChart from './_components/CandlestickChart';
+import CandlestickChartCursor from './_components/CandlestickChartCursor';
 import CurrentPriceData from './_components/CurrentPriceData';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import TimeSliceButton from './_components/TimeSliceButton';
-import { hkQuote, oneDayTimeSlice, oneMonthTimeSlice } from './data';
+import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
+import { oneDayTimeSlice, oneMonthTimeSlice } from './data';
 import {
   buildCharts,
-  FormattedItem,
-  formatTimeSlice,
+  FormattedItemWithIndex,
   X_MARGIN,
   Y_MARGIN,
 } from './utils';
 
 const height = 200;
 const width = Dimensions.get('window').width - 32;
-const type: 'candlestick' | 'line' = 'line';
-const currentQuote = { ...hkQuote };
-const data = [
-  formatTimeSlice(oneDayTimeSlice, hkQuote, 'line'),
-  formatTimeSlice(oneMonthTimeSlice, hkQuote, 'line'),
-];
+const data = [oneDayTimeSlice, oneMonthTimeSlice];
 
 function Example() {
+  const [type, setType] = useState<'candlestick' | 'line'>('candlestick');
   const transition = useSharedValue(1);
   const isCursorActive = useSharedValue(false);
   const previousChartIndex = useSharedValue(0);
   const currentChartIndex = useSharedValue(0);
-  const quote = useSharedValue(currentQuote);
 
   const { mainCharts: charts } = useMemo(
     () => buildCharts({ height, width }, data, type),
     [data, type],
   );
 
-  const translation = useVector(
-    width,
-    charts[currentChartIndex.value].data.length > 0
-      ? (getYForX(charts[currentChartIndex.value].path, width) ?? 0)
-      : 0,
-  ) as { x: SharedValue<number>; y: SharedValue<number> };
+  // const translation = useVector(
+  //   width,
+  //   charts[currentChartIndex.get()].data.length > 0
+  //     ? (getYForX(charts[currentChartIndex.get()].path, width) ?? 0) + Y_MARGIN
+  //     : 0,
+  // ) as { x: SharedValue<number>; y: SharedValue<number> };
 
-  const currentPrice = useSharedValue<FormattedItem | null>(
-    charts[currentChartIndex.value].getItemAtX(width),
-  );
+  // const currentPrice = useSharedValue<FormattedItem | null>(
+  //   charts[currentChartIndex.get()].getItemAtX(width),
+  // );
+  const translation = useVector() as {
+    x: SharedValue<number>;
+    y: SharedValue<number>;
+  };
+
+  const currentPrice = useSharedValue<FormattedItemWithIndex | null>(null);
+
+  useEffect(() => {
+    if (type === 'line') {
+      translation.x.set(width);
+      translation.y.set(
+        (getYForX(charts[currentChartIndex.get()].path, width) ?? 0) + Y_MARGIN,
+      );
+      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(width));
+    } else {
+      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
+      const step =
+        candlestickChartWidth / charts[currentChartIndex.get()].data.length;
+
+      const xVal = clamp(
+        width - (width % step) + step / 2,
+        Y_AXIS_LABELS_WIDTH + step / 2,
+        width - step / 2,
+      );
+
+      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+
+      const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
+
+      translation.x.set(xVal);
+      translation.y.set(0);
+      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+    }
+  }, [type]);
 
   const chartDisplayProps = useAnimatedStyle(() => {
     return {
@@ -63,28 +94,19 @@ function Example() {
   });
 
   const previousTrend = useDerivedValue(() => {
-    // use previousClose from quote for intraday
-    const previousInitialClose =
-      previousChartIndex.value === 0
-        ? quote.get().previousClose
-        : charts[previousChartIndex.get()]?.data?.[0]?.close;
-
-    const previousChange =
-      (quote.get().last ?? 0) - (previousInitialClose ?? 0);
-
-    return previousChange >= 0 ? 'positive' : 'negative';
+    const chartData = charts[previousChartIndex.get()]?.data;
+    const firstClose = chartData[0]?.close;
+    const lastClose = chartData[chartData.length - 1]?.close;
+    if (firstClose == null || lastClose == null) return 'positive';
+    return lastClose >= firstClose ? 'positive' : 'negative';
   });
 
   const currentTrend = useDerivedValue(() => {
-    // use previousClose from quote for intraday
-    const currentInitialClose =
-      currentChartIndex.value === 0
-        ? quote.get().previousClose
-        : charts[currentChartIndex.get()]?.data?.[0]?.close;
-
-    const currentChange = (quote.get().last ?? 0) - (currentInitialClose ?? 0);
-
-    return currentChange >= 0 ? 'positive' : 'negative';
+    const chartData = charts[currentChartIndex.get()]?.data;
+    const firstClose = chartData[0]?.close;
+    const lastClose = chartData[chartData.length - 1]?.close;
+    if (firstClose == null || lastClose == null) return 'positive';
+    return lastClose >= firstClose ? 'positive' : 'negative';
   });
 
   const onGestureEvent = Gesture.Pan()
@@ -119,12 +141,78 @@ function Example() {
       isCursorActive.set(false);
       translation.x.set(width);
       translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
-          0) + Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, width) ?? 0) + Y_MARGIN,
       );
-      currentPrice.set(
-        charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
+      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(width));
+    });
+
+  const onClampedGestureEvent = Gesture.Pan()
+    .activeOffsetX(32)
+    .activeOffsetY([0, 0])
+    .minDistance(0)
+    .onBegin(({ x, y }) => {
+      if (x < 0) return;
+      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
+      const step =
+        candlestickChartWidth / charts[currentChartIndex.value].data.length;
+
+      isCursorActive.set(true);
+
+      const xVal = clamp(
+        x - (x % step) + step / 2,
+        Y_AXIS_LABELS_WIDTH + step / 2,
+        width - step / 2,
       );
+
+      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+
+      const dataPoint = charts[currentChartIndex.value].data[dataPointIndex];
+
+      translation.x.set(xVal);
+      translation.y.set(clamp(y, 0, height) || 0);
+      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+    })
+    .onUpdate(({ x, y }) => {
+      if (x < 0) return;
+      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
+      const step =
+        candlestickChartWidth / charts[currentChartIndex.value].data.length;
+
+      isCursorActive.set(true);
+
+      const xVal = clamp(
+        x - (x % step) + step / 2,
+        Y_AXIS_LABELS_WIDTH + step / 2,
+        width - step / 2,
+      );
+
+      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+
+      const dataPoint = charts[currentChartIndex.value].data[dataPointIndex];
+
+      translation.x.set(xVal);
+      translation.y.set(clamp(y, 0, height) || 0);
+      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+    })
+    .onFinalize(() => {
+      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
+      const step =
+        candlestickChartWidth / charts[currentChartIndex.get()].data.length;
+
+      isCursorActive.set(false);
+
+      const xVal = clamp(
+        width - (width % step) + step / 2,
+        Y_AXIS_LABELS_WIDTH + step / 2,
+        width - step / 2,
+      );
+
+      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+
+      const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
+
+      translation.x.set(xVal);
+      currentPrice.set({ ...dataPoint, index: dataPointIndex });
     });
 
   const updateTimeSlice = useCallback(
@@ -146,9 +234,15 @@ function Example() {
         translation.x.set(width);
 
         translation.y.set(
-          withTiming(getYForX(charts[index].path, width) ?? 0, {
-            duration: 150,
-          }),
+          withTiming(
+            (getYForX(
+              charts[currentChartIndex.get()].path,
+              translation.x.get(),
+            ) ?? 0) + Y_MARGIN,
+            {
+              duration: 150,
+            },
+          ),
         );
 
         currentPrice.set(charts[index].getItemAtX(width));
@@ -175,40 +269,79 @@ function Example() {
         <CurrentPriceData
           chartIndex={currentChartIndex}
           charts={charts}
-          chartType={type}
           currentPrice={currentPrice}
-          isCursorActive={isCursorActive}
-          quote={currentQuote}
+        />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+        <Button
+          onPress={() => {
+            setType('line');
+          }}
+          title="Line"
+        />
+        <Button
+          onPress={() => {
+            setType('candlestick');
+          }}
+          title="Candle"
         />
       </View>
 
       <Animated.View style={chartDisplayProps}>
-        <View>
-          <LineChart
-            charts={charts}
-            currentChartIndex={currentChartIndex}
-            currentTrend={currentTrend}
-            height={height}
-            previousChartIndex={previousChartIndex}
-            previousTrend={previousTrend}
-            transition={transition}
-            width={width}
-          >
-            <View style={StyleSheet.absoluteFill}>
-              <GestureDetector gesture={onGestureEvent}>
-                <Animated.View style={StyleSheet.absoluteFill}>
-                  <LineChartCursor
-                    currentTrend={currentTrend}
-                    height={height}
-                    isCursorActive={isCursorActive}
-                    translation={translation}
-                    width={width}
-                  />
-                </Animated.View>
-              </GestureDetector>
-            </View>
-          </LineChart>
-        </View>
+        {type === 'candlestick' && (
+          <View>
+            <CandlestickChart
+              charts={charts}
+              currentChartIndex={currentChartIndex}
+              currentPrice={currentPrice}
+              height={height}
+              width={width}
+            >
+              <View style={StyleSheet.absoluteFill}>
+                <GestureDetector gesture={onClampedGestureEvent}>
+                  <Animated.View style={StyleSheet.absoluteFill}>
+                    <CandlestickChartCursor
+                      height={height}
+                      isCursorActive={isCursorActive}
+                      translation={translation}
+                      width={width}
+                    />
+                  </Animated.View>
+                </GestureDetector>
+              </View>
+            </CandlestickChart>
+          </View>
+        )}
+
+        {type === 'line' && (
+          <View>
+            <LineChart
+              charts={charts}
+              currentChartIndex={currentChartIndex}
+              currentTrend={currentTrend}
+              height={height}
+              previousChartIndex={previousChartIndex}
+              previousTrend={previousTrend}
+              transition={transition}
+              width={width}
+            >
+              <View style={StyleSheet.absoluteFill}>
+                <GestureDetector gesture={onGestureEvent}>
+                  <Animated.View style={StyleSheet.absoluteFill}>
+                    <LineChartCursor
+                      currentTrend={currentTrend}
+                      height={height}
+                      isCursorActive={isCursorActive}
+                      translation={translation}
+                      width={width}
+                    />
+                  </Animated.View>
+                </GestureDetector>
+              </View>
+            </LineChart>
+          </View>
+        )}
       </Animated.View>
 
       <View style={{ flexDirection: 'row', gap: 16, marginTop: 16 }}>

@@ -1,5 +1,3 @@
-import { Quote } from './types';
-
 export const oneDayTimeSlice = {
   historicalPrices: [
     {
@@ -347,7 +345,7 @@ export const oneDayTimeSlice = {
       bid: null,
       change: '-0.2',
       changeRatio: '-0.0035087719298245614',
-      close: 56.8,
+      close: 56.9,
       currency: 'HKD',
       currencySymbol: 'HKD',
       date: '2026-02-20T05:55:00Z',
@@ -711,39 +709,19 @@ export const oneMonthTimeSlice = {
       bid: null,
       change: '0.2',
       changeRatio: '-0.0035087719298245614',
-      close: 55.15,
+      close: 55.75,
       currency: 'HKD',
       currencySymbol: 'HKD',
       date: '2026-02-21T05:55:00Z',
-      high: 55.6,
+      high: 56.2,
       id: null,
       last: null,
-      low: 55.1,
-      open: 55.55,
+      low: 55.7,
+      open: 56.15,
       symbol: null,
       volume: 257_400,
     },
   ],
   timeSliceAmount: 1,
   timeSliceType: 'M',
-};
-
-export const hkQuote: Quote = {
-  ask: 56.8,
-  bid: 56.75,
-  change: '-0.2',
-  changeRatio: '-0.0035087719298245614',
-  close: 57,
-  currency: null,
-  currencySymbol: 'HKD',
-  date: '2026-02-21T05:55:38Z',
-  high: 57.1,
-  id: 'XHKG:5:delayed',
-  isRealTime: false,
-  isSuspended: false,
-  last: 56.8,
-  low: 56.6,
-  open: 56.8,
-  previousClose: 57,
-  symbol: 'XHKG:5',
 };

@@ -78,6 +78,34 @@ export function YAxisLabels({
   );
 }
 
+export function YAxisLines({
+  charts,
+  currentChartIndex,
+  width,
+}: Omit<Props, 'height'>) {
+  const allLabels = charts.flatMap((chart, chartIdx) =>
+    (chart.yAxisLabels ?? []).map((label, labelIdx) => ({
+      ...label,
+      chartIdx,
+      key: `${chartIdx}-${labelIdx}`,
+    })),
+  );
+
+  return (
+    <>
+      {allLabels.map(({ chartIdx, key, y }) => (
+        <LineSlot
+          chartIdx={chartIdx}
+          currentChartIndex={currentChartIndex}
+          key={key}
+          width={width}
+          y={y}
+        />
+      ))}
+    </>
+  );
+}
+
 function LabelSlot({ chartIdx, currentChartIndex, value, y }: LabelSlotProps) {
   const style = useAnimatedStyle(() => ({
     left: 0,

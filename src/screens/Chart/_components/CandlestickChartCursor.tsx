@@ -24,10 +24,10 @@ export function CandlestickChartCursor({
   const theme = useTheme();
 
   const horizontal = useAnimatedStyle(() => {
-    if (isCursorActive.value) {
+    if (isCursorActive.get()) {
       return {
         opacity: 1,
-        transform: [{ translateY: translation.y.value }],
+        transform: [{ translateY: translation.y.get() }],
       };
     }
 
@@ -37,10 +37,10 @@ export function CandlestickChartCursor({
   }, []);
 
   const vertical = useAnimatedStyle(() => {
-    if (isCursorActive.value) {
+    if (isCursorActive.get()) {
       return {
         opacity: 1,
-        transform: [{ translateX: translation.x.value }],
+        transform: [{ translateX: translation.x.get() }],
       };
     }
 

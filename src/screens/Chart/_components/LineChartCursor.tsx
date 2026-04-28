@@ -41,10 +41,6 @@ export function LineChartCursor({
 }: Props) {
   const theme = useTheme();
   const cursorStyle = useAnimatedStyle(() => {
-    if (!isCursorActive.get()) {
-      return { opacity: 0 };
-    }
-
     const translateX = translation.x.get() - CURSOR_SIZE / 2;
     const translateY = translation.y.get() - CURSOR_SIZE / 2;
 
