@@ -5,7 +5,7 @@ import Chart from './Chart';
 import { oneDayTimeSlice, oneMonthTimeSlice } from './data';
 
 export function ChartScreen() {
-  const [type, setType] = useState<'candlestick' | 'line'>('candlestick');
+  const [type, setType] = useState<'bar' | 'candlestick' | 'line'>('candlestick');
   const [labelPosition, setLabelPosition] = useState<'left' | 'right'>('left');
 
   return (
@@ -25,6 +25,12 @@ export function ChartScreen() {
               setType('candlestick');
             }}
             title="Candle"
+          />
+          <Button
+            onPress={() => {
+              setType('bar');
+            }}
+            title="Bar"
           />
         </View>
 

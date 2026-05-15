@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { clamp, getYForX, useVector } from 'react-native-redash';
 
+import BarChart from './_components/BarChart';
 import CandlestickChart from './_components/CandlestickChart';
 import CandlestickChartCursor from './_components/CandlestickChartCursor';
 import CurrentPriceData from './_components/CurrentPriceData';
@@ -23,7 +24,7 @@ interface ChartProps {
   data: TimeSlice[];
   height: number;
   labelsPosition?: 'left' | 'right';
-  type: 'candlestick' | 'line';
+  type: 'bar' | 'candlestick' | 'line';
   width: number;
 }
 
@@ -310,6 +311,32 @@ function Example({ data, height, labelsPosition, type, width }: ChartProps) {
                 </GestureDetector>
               </View>
             </CandlestickChart>
+          </View>
+        )}
+
+        {type === 'bar' && (
+          <View>
+            <BarChart
+              charts={charts}
+              currentChartIndex={currentChartIndex}
+              currentPrice={currentPrice}
+              height={height}
+              labelsPosition={labelsPosition}
+              width={width}
+            >
+              <View style={StyleSheet.absoluteFill}>
+                <GestureDetector gesture={onClampedGestureEvent}>
+                  <Animated.View style={StyleSheet.absoluteFill}>
+                    <CandlestickChartCursor
+                      height={height}
+                      isCursorActive={isCursorActive}
+                      translation={translation}
+                      width={width}
+                    />
+                  </Animated.View>
+                </GestureDetector>
+              </View>
+            </BarChart>
           </View>
         )}
 

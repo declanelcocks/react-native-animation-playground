@@ -139,7 +139,7 @@ function LineSlot({ chartIdx, currentChartIndex, labelsPosition, width, y }: Lin
   }));
 
   const x1 = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const x2 = labelsPosition === 'right' ? width - Y_AXIS_LABELS_WIDTH : width + Y_AXIS_LABELS_WIDTH;
+  const x2 = labelsPosition === 'right' ? width - Y_AXIS_LABELS_WIDTH : width;
 
   return (
     <AnimatedLine
