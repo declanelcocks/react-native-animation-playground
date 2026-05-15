@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Dimensions, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
@@ -17,20 +17,17 @@ import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import TimeSliceButton from './_components/TimeSliceButton';
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
-import { oneDayTimeSlice, oneMonthTimeSlice } from './data';
-import {
-  buildCharts,
-  FormattedItemWithIndex,
-  Y_MARGIN,
-} from './utils';
+import { TimeSlice } from './types';
+import { buildCharts, FormattedItemWithIndex, Y_MARGIN } from './utils';
+interface ChartProps {
+  data: TimeSlice[];
+  height: number;
+  labelsPosition?: 'left' | 'right';
+  type: 'candlestick' | 'line';
+  width: number;
+}
 
-const height = 200;
-const width = Dimensions.get('window').width - 32;
-const data = [oneDayTimeSlice, oneMonthTimeSlice];
-const labelsPosition: 'left' | 'right' = 'right';
-
-function Example() {
-  const [type, setType] = useState<'candlestick' | 'line'>('candlestick');
+function Example({ data, height, labelsPosition, type, width }: ChartProps) {
   const transition = useSharedValue(1);
   const isCursorActive = useSharedValue(false);
   const previousChartIndex = useSharedValue(0);
@@ -42,7 +39,7 @@ function Example() {
 
   const { mainCharts: charts } = useMemo(
     () => buildCharts({ height, width }, data, type, labelsPosition),
-    [data, type],
+    [data, type, height, width, labelsPosition],
   );
 
   const translation = useVector() as {
@@ -56,9 +53,12 @@ function Example() {
     if (type === 'line') {
       translation.x.set(lineChartEndX);
       translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) + Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) +
+          Y_MARGIN,
       );
-      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(lineChartEndX));
+      currentPrice.set(
+        charts[currentChartIndex.get()].getItemAtX(lineChartEndX),
+      );
     } else {
       const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
       const step =
@@ -79,7 +79,17 @@ function Example() {
       translation.y.set(0);
       currentPrice.set({ ...dataPoint, index: dataPointIndex });
     }
-  }, [type]);
+  }, [
+    charts,
+    currentChartIndex,
+    currentPrice,
+    leftOffset,
+    lineChartEndX,
+    translation.x,
+    translation.y,
+    type,
+    width,
+  ]);
 
   const chartDisplayProps = useAnimatedStyle(() => {
     return {
@@ -136,9 +146,12 @@ function Example() {
       isCursorActive.set(false);
       translation.x.set(lineChartEndX);
       translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) + Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) +
+          Y_MARGIN,
       );
-      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(lineChartEndX));
+      currentPrice.set(
+        charts[currentChartIndex.get()].getItemAtX(lineChartEndX),
+      );
     });
 
   const onClampedGestureEvent = Gesture.Pan()
@@ -252,12 +265,14 @@ function Example() {
       }
     },
     [
-      charts,
-      currentPrice,
       currentChartIndex,
       previousChartIndex,
       transition,
-      translation,
+      charts,
+      translation.x,
+      translation.y,
+      lineChartEndX,
+      currentPrice,
     ],
   );
 
@@ -268,21 +283,6 @@ function Example() {
           chartIndex={currentChartIndex}
           charts={charts}
           currentPrice={currentPrice}
-        />
-      </View>
-
-      <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
-        <Button
-          onPress={() => {
-            setType('line');
-          }}
-          title="Line"
-        />
-        <Button
-          onPress={() => {
-            setType('candlestick');
-          }}
-          title="Candle"
         />
       </View>
 
