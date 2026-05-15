@@ -1,6 +1,6 @@
 import { scaleLinear, ScaleLinear, scaleOrdinal } from 'd3-scale';
 import { curveLinear, curveMonotoneX, line } from 'd3-shape';
-import { Extrapolate, interpolate } from 'react-native-reanimated';
+import { interpolate } from 'react-native-reanimated';
 import { parse, Path as RedashPath } from 'react-native-redash';
 
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
@@ -74,26 +74,14 @@ const dataFormatter = (data: Quote[], valueKey: string): FormattedItem[] => {
     })
     .filter((d) => !!d.value && !!d.date);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return formattedData as any;
+  return formattedData as FormattedItem[];
 };
 
 const getHighLowDomain = (items: FormattedItem[]): [number, number] => {
-  'worklet';
-
   const values = items
     .flatMap(({ high, low }) => [high, low])
     .filter((v): v is number => v !== undefined);
   return [Math.min(...values), Math.max(...values)];
-};
-
-/**
- * The y-domain of the price chart is
- * [(min price or indicator value), (max price or indicator value)]
- */
-const priceYDomain = (prices: FormattedItem[]): [number, number] => {
-  const priceYDomain = getHighLowDomain(prices);
-  return [Math.min(priceYDomain[0]), Math.max(priceYDomain[1])];
 };
 
 const buildYAxisLabels = (
@@ -121,34 +109,33 @@ const buildYAxisLabels = (
   return yAxisLabels;
 };
 
-/**s
- * Builds path. Param offset is needed to HK 3Y time slice.
- * @param offset used when missing data points to span to whole time slice
- */
-const buildPath2 = (
+const buildChartPath = (
   size: { height: number; width: number },
   items: FormattedItem[],
   yDomain: [number, number],
   type: ChartType,
   smooth?: boolean,
+  labelsPosition?: 'left' | 'right',
 ): {
-  data: FormattedItemWithIndex[];
+  data: FormattedItem[];
   getItemAtX(x: number): FormattedItemWithIndex;
   rawPath: string;
   scaleY: ScaleLinear<number, number>;
 } => {
+  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
+  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
   const xScaleDomain = items.map((p) => p.date.toString());
   let xScaleRange;
   const effectiveWidth = size.width - Y_AXIS_LABELS_WIDTH;
 
-  if (type == 'candlestick') {
+  if (type === 'candlestick') {
     const step = effectiveWidth / items.length;
     xScaleRange = items.map(
-      (_, i) => Y_AXIS_LABELS_WIDTH + step / 2 + step * i,
+      (_, i) => leftOffset + step / 2 + step * i,
     );
   } else {
     const step = effectiveWidth / (items.length - 1 || 1);
-    xScaleRange = items.map((_, i) => Y_AXIS_LABELS_WIDTH + step * i);
+    xScaleRange = items.map((_, i) => leftOffset + step * i);
   }
 
   const scaleX = scaleOrdinal().domain(xScaleDomain).range(xScaleRange);
@@ -161,27 +148,20 @@ const buildPath2 = (
     items.map((d) => [d.value, d.date]),
   );
 
-  const formattedData = [...items];
-
-  /**
-   * Given x within the specified domain,
-   * calculate a normalized value to find the closest element in the array
-   */
   const getItemAtX = (x: number) => {
     'worklet';
-    const [domainStart, domainEnd] = [Y_AXIS_LABELS_WIDTH, size.width];
+    const [domainStart, domainEnd] = [leftOffset, size.width - rightOffset];
     const xNormal = (x - domainStart) / (domainEnd - domainStart);
-    const closestIndex = Math.floor(xNormal * (formattedData.length - 1));
-    return { ...formattedData[closestIndex], index: closestIndex };
+    const closestIndex = Math.floor(xNormal * (items.length - 1));
+    return { ...items[closestIndex], index: closestIndex };
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     data: items,
     getItemAtX,
-    rawPath,
+    rawPath: rawPath ?? '',
     scaleY,
-  } as any;
+  };
 };
 
 const buildPathForChart = (
@@ -189,6 +169,7 @@ const buildPathForChart = (
   items: FormattedItem[],
   yDomain: [number, number],
   type: ChartType,
+  labelsPosition?: 'left' | 'right',
 ): {
   data: FormattedItem[];
   getItemAtX(x: number): FormattedItemWithIndex;
@@ -204,20 +185,17 @@ const buildPathForChart = (
       value,
       [0, Math.max(...yDomain) - Math.min(...yDomain)],
       [0, size.height],
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      Extrapolate.CLAMP,
+      'clamp',
     );
   };
 
   const yAxisLabels = buildYAxisLabels(yDomain[0], yDomain[1], size.height);
 
-  const result = {
-    ...buildPath2(size, items, yDomain, type),
+  return {
+    ...buildChartPath(size, items, yDomain, type, undefined, labelsPosition),
     scaleBody,
     yAxisLabels,
   };
-
-  return result;
 };
 
 export interface BuildChartsResult {
@@ -231,6 +209,7 @@ export const buildCharts = (
   },
   items: TimeSlice[],
   type: ChartType,
+  labelsPosition?: 'left' | 'right',
 ): BuildChartsResult => {
   const result = items.reduce(
     (acc: BuildChartsResult, item) => {
@@ -238,21 +217,21 @@ export const buildCharts = (
       const dateRangeLabel = `${item.timeSliceAmount}${item.timeSliceType}`;
       const intervalLabel = `${item.timeSliceAmount}${item.timeSliceType}`;
 
-      const emptyMainChart: any = {
+      const emptyMainChart: Chart = {
         data: [],
         dateRangeLabel,
-        getItemAtX: () => null,
+        getItemAtX: () => null as unknown as FormattedItemWithIndex,
         intervalLabel,
-        path: null,
-        rawPath: null,
-        scaleBody: scaleLinear(),
-        scaleY: scaleLinear(),
+        path: null as unknown as RedashPath,
+        rawPath: '',
+        scaleBody: () => 0,
+        scaleY: scaleLinear<number, number>(),
         timeSliceLabel,
-        trend: null,
+        trend: 'negative',
+        yAxisLabels: [],
       };
 
       if (item.historicalPrices?.length === 0) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         acc.mainCharts.push(emptyMainChart);
 
         return acc;
@@ -261,24 +240,18 @@ export const buildCharts = (
       const prices = [...(item.historicalPrices ?? [])];
 
       const priceData = dataFormatter(prices, 'close');
-      const yDomain = priceYDomain(priceData);
+      const yDomain = getHighLowDomain(priceData);
 
-      const chart = buildPathForChart(size, priceData, yDomain, type);
+      const chart = buildPathForChart(size, priceData, yDomain, type, labelsPosition);
 
       if (!chart.rawPath) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         acc.mainCharts.push(emptyMainChart);
         return acc;
       }
 
-      const trend =
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        chart.data &&
-        chart.data.length > 0 &&
-        chart.data[chart.data.length - 1] &&
-        Number(chart.data[chart.data.length - 1].change) >= 0
-          ? 'positive'
-          : 'negative';
+      const lastChange = chart.data.at(-1)?.change;
+      const trend: 'negative' | 'positive' =
+        lastChange !== undefined && Number(lastChange) >= 0 ? 'positive' : 'negative';
 
       const mainChart: Chart = {
         dateRangeLabel,

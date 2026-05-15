@@ -21,13 +21,13 @@ import { oneDayTimeSlice, oneMonthTimeSlice } from './data';
 import {
   buildCharts,
   FormattedItemWithIndex,
-  X_MARGIN,
   Y_MARGIN,
 } from './utils';
 
 const height = 200;
 const width = Dimensions.get('window').width - 32;
 const data = [oneDayTimeSlice, oneMonthTimeSlice];
+const labelsPosition: 'left' | 'right' = 'right';
 
 function Example() {
   const [type, setType] = useState<'candlestick' | 'line'>('candlestick');
@@ -36,21 +36,15 @@ function Example() {
   const previousChartIndex = useSharedValue(0);
   const currentChartIndex = useSharedValue(0);
 
+  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
+  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
+  const lineChartEndX = width - rightOffset;
+
   const { mainCharts: charts } = useMemo(
-    () => buildCharts({ height, width }, data, type),
+    () => buildCharts({ height, width }, data, type, labelsPosition),
     [data, type],
   );
 
-  // const translation = useVector(
-  //   width,
-  //   charts[currentChartIndex.get()].data.length > 0
-  //     ? (getYForX(charts[currentChartIndex.get()].path, width) ?? 0) + Y_MARGIN
-  //     : 0,
-  // ) as { x: SharedValue<number>; y: SharedValue<number> };
-
-  // const currentPrice = useSharedValue<FormattedItem | null>(
-  //   charts[currentChartIndex.get()].getItemAtX(width),
-  // );
   const translation = useVector() as {
     x: SharedValue<number>;
     y: SharedValue<number>;
@@ -60,23 +54,24 @@ function Example() {
 
   useEffect(() => {
     if (type === 'line') {
-      translation.x.set(width);
+      translation.x.set(lineChartEndX);
       translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, width) ?? 0) + Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) + Y_MARGIN,
       );
-      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(width));
+      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(lineChartEndX));
     } else {
       const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
       const step =
         candlestickChartWidth / charts[currentChartIndex.get()].data.length;
+      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
 
       const xVal = clamp(
-        width - (width % step) + step / 2,
-        Y_AXIS_LABELS_WIDTH + step / 2,
-        width - step / 2,
+        candlestickEndX,
+        leftOffset + step / 2,
+        candlestickEndX,
       );
 
-      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
 
       const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
 
@@ -116,7 +111,7 @@ function Example() {
     .onBegin(({ x }) => {
       if (x < 0) return;
       isCursorActive.set(true);
-      translation.x.set(clamp(x, X_MARGIN, width));
+      translation.x.set(clamp(x, leftOffset, lineChartEndX));
       translation.y.set(
         (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
           0) + Y_MARGIN,
@@ -128,7 +123,7 @@ function Example() {
     .onUpdate(({ x }) => {
       if (x < 0) return;
       isCursorActive.set(true);
-      translation.x.set(clamp(x, X_MARGIN, width));
+      translation.x.set(clamp(x, leftOffset, lineChartEndX));
       translation.y.set(
         (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
           0) + Y_MARGIN,
@@ -139,11 +134,11 @@ function Example() {
     })
     .onFinalize(() => {
       isCursorActive.set(false);
-      translation.x.set(width);
+      translation.x.set(lineChartEndX);
       translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, width) ?? 0) + Y_MARGIN,
+        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) + Y_MARGIN,
       );
-      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(width));
+      currentPrice.set(charts[currentChartIndex.get()].getItemAtX(lineChartEndX));
     });
 
   const onClampedGestureEvent = Gesture.Pan()
@@ -155,16 +150,17 @@ function Example() {
       const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
       const step =
         candlestickChartWidth / charts[currentChartIndex.value].data.length;
+      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
 
       isCursorActive.set(true);
 
       const xVal = clamp(
         x - (x % step) + step / 2,
-        Y_AXIS_LABELS_WIDTH + step / 2,
-        width - step / 2,
+        leftOffset + step / 2,
+        candlestickEndX,
       );
 
-      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
 
       const dataPoint = charts[currentChartIndex.value].data[dataPointIndex];
 
@@ -177,16 +173,17 @@ function Example() {
       const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
       const step =
         candlestickChartWidth / charts[currentChartIndex.value].data.length;
+      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
 
       isCursorActive.set(true);
 
       const xVal = clamp(
         x - (x % step) + step / 2,
-        Y_AXIS_LABELS_WIDTH + step / 2,
-        width - step / 2,
+        leftOffset + step / 2,
+        candlestickEndX,
       );
 
-      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
 
       const dataPoint = charts[currentChartIndex.value].data[dataPointIndex];
 
@@ -198,16 +195,17 @@ function Example() {
       const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
       const step =
         candlestickChartWidth / charts[currentChartIndex.get()].data.length;
+      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
 
       isCursorActive.set(false);
 
       const xVal = clamp(
-        width - (width % step) + step / 2,
-        Y_AXIS_LABELS_WIDTH + step / 2,
-        width - step / 2,
+        candlestickEndX,
+        leftOffset + step / 2,
+        candlestickEndX,
       );
 
-      const dataPointIndex = Math.floor((xVal - Y_AXIS_LABELS_WIDTH) / step);
+      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
 
       const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
 
@@ -231,7 +229,7 @@ function Example() {
       );
 
       if (charts[index]?.data?.length) {
-        translation.x.set(width);
+        translation.x.set(lineChartEndX);
 
         translation.y.set(
           withTiming(
@@ -245,9 +243,9 @@ function Example() {
           ),
         );
 
-        currentPrice.set(charts[index].getItemAtX(width));
+        currentPrice.set(charts[index].getItemAtX(lineChartEndX));
       } else {
-        translation.x.set(width);
+        translation.x.set(lineChartEndX);
         translation.y.set(0);
 
         currentPrice.set(null);
@@ -296,6 +294,7 @@ function Example() {
               currentChartIndex={currentChartIndex}
               currentPrice={currentPrice}
               height={height}
+              labelsPosition={labelsPosition}
               width={width}
             >
               <View style={StyleSheet.absoluteFill}>
@@ -321,6 +320,7 @@ function Example() {
               currentChartIndex={currentChartIndex}
               currentTrend={currentTrend}
               height={height}
+              labelsPosition={labelsPosition}
               previousChartIndex={previousChartIndex}
               previousTrend={previousTrend}
               transition={transition}

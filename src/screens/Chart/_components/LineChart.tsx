@@ -22,6 +22,7 @@ interface Props {
   currentChartIndex: SharedValue<number>;
   currentTrend: Readonly<SharedValue<'negative' | 'positive'>>;
   height: number;
+  labelsPosition?: 'left' | 'right';
   previousChartIndex: SharedValue<number>;
   previousTrend?: Readonly<SharedValue<'negative' | 'positive'>>;
   transition: SharedValue<number>;
@@ -34,12 +35,15 @@ export function LineChart({
   currentChartIndex,
   currentTrend,
   height,
+  labelsPosition,
   previousChartIndex,
   previousTrend,
   transition,
   width,
 }: PropsWithChildren<Props>) {
   const theme = useTheme();
+  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
+  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
 
   const animatedProps = useAnimatedProps(() => {
     const previousChart = charts[previousChartIndex.get()];
@@ -116,7 +120,7 @@ export function LineChart({
           : 0;
 
     return {
-      d: `${d} L ${width} ${height} L ${Y_AXIS_LABELS_WIDTH} ${height}`,
+      d: `${d} L ${width - rightOffset} ${height} L ${leftOffset} ${height}`,
       opacity,
     };
   });
@@ -154,7 +158,7 @@ export function LineChart({
           : 0;
 
     return {
-      d: `${d} L ${width} ${height} L ${Y_AXIS_LABELS_WIDTH} ${height}`,
+      d: `${d} L ${width - rightOffset} ${height} L ${leftOffset} ${height}`,
       opacity,
     };
   });
@@ -166,6 +170,7 @@ export function LineChart({
           charts={charts}
           currentChartIndex={currentChartIndex}
           height={height}
+          labelsPosition={labelsPosition}
           width={width}
         />
 

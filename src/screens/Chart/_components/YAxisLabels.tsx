@@ -12,12 +12,14 @@ import { Chart, Y_MARGIN } from '../utils';
 import { BaseLabel } from './Label';
 
 const LABEL_HEIGHT = 14;
+const LABELS_GAP = 4;
 
 export const Y_AXIS_LABELS_WIDTH = 32;
 
 interface LabelSlotProps {
   chartIdx: number;
   currentChartIndex: SharedValue<number>;
+  labelLeft: number;
   value: string;
   y: number;
 }
@@ -25,6 +27,7 @@ interface LabelSlotProps {
 interface LineSlotProps {
   chartIdx: number;
   currentChartIndex: SharedValue<number>;
+  labelsPosition?: 'left' | 'right';
   width: number;
   y: number;
 }
@@ -33,6 +36,7 @@ interface Props {
   charts: Chart[];
   currentChartIndex: SharedValue<number>;
   height: number;
+  labelsPosition?: 'left' | 'right';
   width: number;
 }
 
@@ -42,6 +46,7 @@ export function YAxisLabels({
   charts,
   currentChartIndex,
   height,
+  labelsPosition,
   width,
 }: Props) {
   const allLabels = charts.flatMap((chart, chartIdx) =>
@@ -60,6 +65,7 @@ export function YAxisLabels({
             chartIdx={chartIdx}
             currentChartIndex={currentChartIndex}
             key={key}
+            labelsPosition={labelsPosition}
             width={width}
             y={y}
           />
@@ -70,6 +76,7 @@ export function YAxisLabels({
           chartIdx={chartIdx}
           currentChartIndex={currentChartIndex}
           key={key}
+          labelLeft={labelsPosition === 'right' ? width - Y_AXIS_LABELS_WIDTH + LABELS_GAP : 0}
           value={value}
           y={y}
         />
@@ -81,6 +88,7 @@ export function YAxisLabels({
 export function YAxisLines({
   charts,
   currentChartIndex,
+  labelsPosition,
   width,
 }: Omit<Props, 'height'>) {
   const allLabels = charts.flatMap((chart, chartIdx) =>
@@ -98,6 +106,7 @@ export function YAxisLines({
           chartIdx={chartIdx}
           currentChartIndex={currentChartIndex}
           key={key}
+          labelsPosition={labelsPosition}
           width={width}
           y={y}
         />
@@ -106,9 +115,9 @@ export function YAxisLines({
   );
 }
 
-function LabelSlot({ chartIdx, currentChartIndex, value, y }: LabelSlotProps) {
+function LabelSlot({ chartIdx, currentChartIndex, labelLeft, value, y }: LabelSlotProps) {
   const style = useAnimatedStyle(() => ({
-    left: 0,
+    left: labelLeft,
     opacity: currentChartIndex.value === chartIdx ? 1 : 0,
     position: 'absolute',
     top: y + Y_MARGIN - LABEL_HEIGHT / 2,
@@ -122,12 +131,15 @@ function LabelSlot({ chartIdx, currentChartIndex, value, y }: LabelSlotProps) {
   );
 }
 
-function LineSlot({ chartIdx, currentChartIndex, width, y }: LineSlotProps) {
+function LineSlot({ chartIdx, currentChartIndex, labelsPosition, width, y }: LineSlotProps) {
   const theme = useTheme();
 
   const animatedProps = useAnimatedProps(() => ({
     opacity: currentChartIndex.value === chartIdx ? 1 : 0,
   }));
+
+  const x1 = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
+  const x2 = labelsPosition === 'right' ? width - Y_AXIS_LABELS_WIDTH : width + Y_AXIS_LABELS_WIDTH;
 
   return (
     <AnimatedLine
@@ -135,8 +147,8 @@ function LineSlot({ chartIdx, currentChartIndex, width, y }: LineSlotProps) {
       stroke={theme.colors.gray400}
       strokeDasharray={4}
       transform={[{ translateY: Y_MARGIN }]}
-      x1={Y_AXIS_LABELS_WIDTH}
-      x2={width + Y_AXIS_LABELS_WIDTH}
+      x1={x1}
+      x2={x2}
       y1={y}
       y2={y}
     />

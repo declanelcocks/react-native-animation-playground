@@ -7,7 +7,6 @@ import { Line, Rect } from 'react-native-svg';
 import { useTheme } from '@/theme';
 
 import { FormattedItemWithIndex, Y_MARGIN } from '../utils';
-import { Y_AXIS_LABELS_WIDTH } from './YAxisLabels';
 
 interface CandlestickChartCandleProps {
   calculateCandleHeight: (size: number) => number;
@@ -15,6 +14,7 @@ interface CandlestickChartCandleProps {
   candleWidth: number;
   currentPrice: SharedValue<FormattedItemWithIndex | null>;
   data: FormattedItemWithIndex;
+  leftOffset: number;
   step: number;
 }
 
@@ -27,6 +27,7 @@ export function CandlestickChartCandle({
   candleWidth,
   currentPrice,
   data,
+  leftOffset,
   step,
 }: CandlestickChartCandleProps) {
   const theme = useTheme();
@@ -83,7 +84,7 @@ export function CandlestickChartCandle({
         strokeWidth={2}
         transform={[
           { translateY: Y_MARGIN },
-          { translateX: Y_AXIS_LABELS_WIDTH },
+          { translateX: leftOffset },
         ]}
         x1={x + step / 2}
         x2={x + step / 2}
@@ -99,7 +100,7 @@ export function CandlestickChartCandle({
             translateY: Y_MARGIN + calculateYValue(max),
           },
           {
-            translateX: x + step / 2 - candleWidth / 2 + Y_AXIS_LABELS_WIDTH,
+            translateX: x + step / 2 - candleWidth / 2 + leftOffset,
           },
         ]}
         width={candleWidth}

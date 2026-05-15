@@ -13,6 +13,7 @@ interface Props {
   currentChartIndex: SharedValue<number>;
   currentPrice: SharedValue<FormattedItemWithIndex | null>;
   height: number;
+  labelsPosition?: 'left' | 'right';
   width: number;
 }
 
@@ -24,8 +25,10 @@ export function CandlestickChart({
   currentChartIndex,
   currentPrice,
   height,
+  labelsPosition,
   width,
 }: PropsWithChildren<Props>) {
+  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
   const [chartIndex, setChartIndex] = useState<number>();
 
   useAnimatedReaction(
@@ -47,12 +50,14 @@ export function CandlestickChart({
         charts={charts}
         currentChartIndex={currentChartIndex}
         height={height}
+        labelsPosition={labelsPosition}
         width={width}
       />
       <Svg height={height + Y_MARGIN * 2} width={width + X_MARGIN}>
         <YAxisLines
           charts={charts}
           currentChartIndex={currentChartIndex}
+          labelsPosition={labelsPosition}
           width={width}
         />
 
@@ -71,6 +76,7 @@ export function CandlestickChart({
               currentPrice={currentPrice}
               data={{ ...d, index: i }}
               key={i}
+              leftOffset={leftOffset}
               step={candlestickChartWidth / currentChart.data.length}
             />
           );
