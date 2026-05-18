@@ -60,13 +60,28 @@ export function ScrollableBarChart({
   return (
     <View style={{ height: height + Y_MARGIN * 2, width }}>
       {/* Sticky Y-axis reference lines */}
-      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
+      >
         <Svg height={height + Y_MARGIN * 2} width={width}>
           <YAxisLines
             charts={charts}
             currentChartIndex={currentChartIndex}
             labelsPosition={labelsPosition}
             width={width}
+          />
+
+          <Line
+            stroke={theme.colors.gray400}
+            strokeWidth={1}
+            transform={[{ translateY: Y_MARGIN }]}
+            x1={labelsPosition === 'left' ? leftOffset : 0}
+            x2={
+              labelsPosition === 'left' ? totalBarsWidth : width - rightOffset
+            }
+            y1={height}
+            y2={height}
           />
         </Svg>
       </View>
@@ -75,11 +90,10 @@ export function ScrollableBarChart({
       <View
         style={[
           StyleSheet.absoluteFill,
-          { left: leftOffset, right: rightOffset },
+          { left: leftOffset, right: rightOffset, zIndex: 2 },
         ]}
       >
         <ScrollView
-          bounces={false}
           horizontal
           ref={scrollRef}
           showsHorizontalScrollIndicator={false}
@@ -103,16 +117,6 @@ export function ScrollableBarChart({
                 step={step}
               />
             ))}
-
-            <Line
-              stroke={theme.colors.gray400}
-              strokeWidth={1}
-              transform={[{ translateY: Y_MARGIN }]}
-              x1={0}
-              x2={totalBarsWidth}
-              y1={height}
-              y2={height}
-            />
           </Svg>
         </ScrollView>
       </View>
