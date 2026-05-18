@@ -16,6 +16,7 @@ import CandlestickChartCursor from './_components/CandlestickChartCursor';
 import CurrentPriceData from './_components/CurrentPriceData';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
+import ScrollableBarChart from './_components/ScrollableBarChart';
 import TimeSliceButton from './_components/TimeSliceButton';
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
 import { TimeSlice } from './types';
@@ -24,7 +25,7 @@ interface ChartProps {
   data: TimeSlice[];
   height: number;
   labelsPosition?: 'left' | 'right';
-  type: 'bar' | 'candlestick' | 'line';
+  type: 'bar-scrollable' | 'bar' | 'candlestick' | 'line';
   width: number;
 }
 
@@ -338,6 +339,17 @@ function Example({ data, height, labelsPosition, type, width }: ChartProps) {
               </View>
             </BarChart>
           </View>
+        )}
+
+        {type === 'bar-scrollable' && (
+          <ScrollableBarChart
+            charts={charts}
+            currentChartIndex={currentChartIndex}
+            currentPrice={currentPrice}
+            height={height}
+            labelsPosition={labelsPosition}
+            width={width}
+          />
         )}
 
         {type === 'line' && (

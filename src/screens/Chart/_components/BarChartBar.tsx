@@ -15,6 +15,7 @@ interface BarChartBarProps {
   currentPrice: SharedValue<FormattedItemWithIndex | null>;
   data: FormattedItemWithIndex;
   leftOffset: number;
+  onPress?: () => void;
   step: number;
 }
 
@@ -27,6 +28,7 @@ export function BarChartBar({
   currentPrice,
   data,
   leftOffset,
+  onPress,
   step,
 }: BarChartBarProps) {
   const theme = useTheme();
@@ -44,6 +46,7 @@ export function BarChartBar({
     <AnimatedRect
       animatedProps={animatedRectProps}
       height={Math.max(barHeight, 2)}
+      onPress={onPress}
       transform={[
         { translateY: Y_MARGIN + calculateYValue(close ?? 0) },
         { translateX: x + step / 2 - barWidth / 2 + leftOffset },

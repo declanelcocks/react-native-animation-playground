@@ -5,7 +5,7 @@ import Chart from './Chart';
 import { oneDayTimeSlice, oneMonthTimeSlice } from './data';
 
 export function ChartScreen() {
-  const [type, setType] = useState<'bar' | 'candlestick' | 'line'>('candlestick');
+  const [type, setType] = useState<'bar-scrollable' | 'bar' | 'candlestick' | 'line'>('candlestick');
   const [labelPosition, setLabelPosition] = useState<'left' | 'right'>('left');
 
   return (
@@ -31,6 +31,12 @@ export function ChartScreen() {
               setType('bar');
             }}
             title="Bar"
+          />
+          <Button
+            onPress={() => {
+              setType('bar-scrollable');
+            }}
+            title="Scroll Bar"
           />
         </View>
 

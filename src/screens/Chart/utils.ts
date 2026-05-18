@@ -7,7 +7,7 @@ import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
 import { formatNumber } from './formatters';
 import { Quote, TimeSlice } from './types';
 
-export type ChartType = 'bar' | 'candlestick' | 'line';
+export type ChartType = 'bar' | 'bar-scrollable' | 'candlestick' | 'line';
 
 export const X_MARGIN = 32;
 export const Y_MARGIN = 4;
