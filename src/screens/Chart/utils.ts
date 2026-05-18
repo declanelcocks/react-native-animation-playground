@@ -84,6 +84,15 @@ const getHighLowDomain = (items: FormattedItem[]): [number, number] => {
   return [Math.min(...values), Math.max(...values)];
 };
 
+const getValueDomain = (items: FormattedItem[], paddingPct = 0.1): [number, number] => {
+  const values = items.map((d) => d.value).filter((v) => !Number.isNaN(v));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min;
+  const padding = range > 0 ? range * paddingPct : Math.abs(max) * paddingPct || paddingPct;
+  return [min - padding, max + padding];
+};
+
 const buildYAxisLabels = (
   min: number,
   max: number,
@@ -240,7 +249,9 @@ export const buildCharts = (
       const prices = [...(item.historicalPrices ?? [])];
 
       const priceData = dataFormatter(prices, 'close');
-      const yDomain = getHighLowDomain(priceData);
+      const yDomain = type === 'candlestick'
+        ? getHighLowDomain(priceData)
+        : getValueDomain(priceData);
 
       const chart = buildPathForChart(size, priceData, yDomain, type, labelsPosition);
 

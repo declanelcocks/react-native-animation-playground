@@ -37,7 +37,7 @@ export function BarChartBar({
 
   const animatedRectProps = useAnimatedProps(() => {
     const isActive = index === currentPrice.get()?.index;
-    return { fill: isActive ? theme.colors.gray800 : theme.colors.gray400 };
+    return { fill: isActive ? theme.colors.blue800 : theme.colors.blue500 };
   });
 
   return (
