@@ -12,6 +12,7 @@ interface BarChartBarProps {
   barWidth: number;
   calculateBarHeight: (size: number) => number;
   calculateYValue: (value: number) => number;
+  chartHeight: number;
   currentPrice: SharedValue<FormattedItemWithIndex | null>;
   data: FormattedItemWithIndex;
   leftOffset: number;
@@ -25,6 +26,7 @@ export function BarChartBar({
   barWidth,
   calculateBarHeight,
   calculateYValue,
+  chartHeight,
   currentPrice,
   data,
   leftOffset,
@@ -43,16 +45,25 @@ export function BarChartBar({
   });
 
   return (
-    <AnimatedRect
-      animatedProps={animatedRectProps}
-      height={Math.max(barHeight, 2)}
-      onPress={onPress}
-      transform={[
-        { translateY: Y_MARGIN + calculateYValue(close ?? 0) },
-        { translateX: x + step / 2 - barWidth / 2 + leftOffset },
-      ]}
-      width={barWidth}
-    />
+    <>
+      <Rect
+        fill="transparent"
+        height={chartHeight}
+        onPress={onPress}
+        transform={[{ translateY: Y_MARGIN }, { translateX: x + leftOffset }]}
+        width={step}
+      />
+      <AnimatedRect
+        animatedProps={animatedRectProps}
+        height={Math.max(barHeight, 2)}
+        onPress={onPress}
+        transform={[
+          { translateY: Y_MARGIN + calculateYValue(close ?? 0) },
+          { translateX: x + step / 2 - barWidth / 2 + leftOffset },
+        ]}
+        width={barWidth}
+      />
+    </>
   );
 }
 

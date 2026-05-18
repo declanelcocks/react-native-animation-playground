@@ -92,6 +92,7 @@ export function ScrollableBarChart({
                   height - currentChart.scaleY(value)
                 }
                 calculateYValue={(value: number) => currentChart.scaleY(value)}
+                chartHeight={height}
                 currentPrice={currentPrice}
                 data={{ ...d, index: i }}
                 key={i}
