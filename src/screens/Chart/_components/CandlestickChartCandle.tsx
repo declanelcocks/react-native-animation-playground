@@ -82,10 +82,7 @@ export function CandlestickChartCandle({
       <AnimatedLine
         animatedProps={animatedLineProps}
         strokeWidth={2}
-        transform={[
-          { translateY: Y_MARGIN },
-          { translateX: leftOffset },
-        ]}
+        transform={[{ translateY: Y_MARGIN }, { translateX: leftOffset }]}
         x1={x + step / 2}
         x2={x + step / 2}
         y1={calculateYValue(low ?? 0)}

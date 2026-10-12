@@ -8,7 +8,6 @@ import type { UnionConfiguration } from '@/theme/types/config';
  * @param configuration
  */
 export const generateBackgrounds = (configuration: UnionConfiguration) => {
-  // eslint-disable-next-line unicorn/no-array-reduce
   return Object.entries(configuration.backgrounds).reduce<Backgrounds>(
     (accumulator, [key, value]) => {
       return Object.assign(accumulator, {

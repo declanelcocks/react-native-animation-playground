@@ -76,7 +76,11 @@ export function YAxisLabels({
           chartIdx={chartIdx}
           currentChartIndex={currentChartIndex}
           key={key}
-          labelLeft={labelsPosition === 'right' ? width - Y_AXIS_LABELS_WIDTH + LABELS_GAP : 0}
+          labelLeft={
+            labelsPosition === 'right'
+              ? width - Y_AXIS_LABELS_WIDTH + LABELS_GAP
+              : 0
+          }
           value={value}
           y={y}
         />
@@ -115,7 +119,13 @@ export function YAxisLines({
   );
 }
 
-function LabelSlot({ chartIdx, currentChartIndex, labelLeft, value, y }: LabelSlotProps) {
+function LabelSlot({
+  chartIdx,
+  currentChartIndex,
+  labelLeft,
+  value,
+  y,
+}: LabelSlotProps) {
   const style = useAnimatedStyle(() => ({
     left: labelLeft,
     opacity: currentChartIndex.value === chartIdx ? 1 : 0,
@@ -131,7 +141,13 @@ function LabelSlot({ chartIdx, currentChartIndex, labelLeft, value, y }: LabelSl
   );
 }
 
-function LineSlot({ chartIdx, currentChartIndex, labelsPosition, width, y }: LineSlotProps) {
+function LineSlot({
+  chartIdx,
+  currentChartIndex,
+  labelsPosition,
+  width,
+  y,
+}: LineSlotProps) {
   const theme = useTheme();
 
   const animatedProps = useAnimatedProps(() => ({

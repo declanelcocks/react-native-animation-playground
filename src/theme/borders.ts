@@ -15,23 +15,22 @@ import type { UnionConfiguration } from '@/theme/types/config';
  * @param configuration
  */
 export const generateBorderColors = (configuration: UnionConfiguration) => {
-  return Object.entries(
-    configuration.borders.colors,
-    // eslint-disable-next-line unicorn/no-array-reduce
-  ).reduce<BorderColors>((accumulator, [key, value]) => {
-    return Object.assign(accumulator, {
-      [key]: {
-        borderColor: value,
-      },
-    });
-  }, {} as BorderColors);
+  return Object.entries(configuration.borders.colors).reduce<BorderColors>(
+    (accumulator, [key, value]) => {
+      return Object.assign(accumulator, {
+        [key]: {
+          borderColor: value,
+        },
+      });
+    },
+    {} as BorderColors,
+  );
 };
 
 /**
  * Generates border radius styles from configuration
  */
 export const generateBorderRadius = () => {
-  // eslint-disable-next-line unicorn/no-array-reduce
   return config.borders.radius.reduce<
     BorderBottomRadius & BorderRadius & BorderTopRadius
   >(
@@ -64,7 +63,6 @@ export const generateBorderRadius = () => {
  * Generates border width styles from configuration
  */
 export const generateBorderWidths = () => {
-  // eslint-disable-next-line unicorn/no-array-reduce
   return config.borders.widths.reduce<BorderWidths>((accumulator, width) => {
     return Object.assign(accumulator, {
       [`w_${width}`]: {
