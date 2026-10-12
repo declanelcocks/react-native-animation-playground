@@ -16,6 +16,11 @@ export type BollingerBandsSettings = {
   standardDeviations: Scalars['Int'];
 };
 
+export interface DataSet {
+  data: Quote[];
+  label: string;
+}
+
 export type IndicatorLine = {
   __typename?: 'IndicatorLine';
   data?: Maybe<Maybe<TimeSeriesData>[]>;
@@ -123,11 +128,3 @@ export type TimeSeriesData = {
   timestamp: Scalars['Float'];
   value?: Maybe<Scalars['Float']>;
 };
-
-export interface TimeSlice {
-  __typename?: 'TimeSlice';
-  historicalPrices?: Quote[];
-  technicalAnalysis?: Maybe<Maybe<TechnicalAnalysis>[]>;
-  timeSliceAmount?: Maybe<Scalars['Float']>;
-  timeSliceType?: Maybe<Scalars['String']>;
-}

@@ -18,8 +18,8 @@ export function CurrentPriceData({ chartIndex, charts, currentPrice }: Props) {
     return round(currentPrice.get()?.close, 2);
   });
 
-  const dateRange = useDerivedValue(() => {
-    return charts[chartIndex.get()]?.dateRangeLabel || '';
+  const dataSetLabel = useDerivedValue(() => {
+    return charts[chartIndex.get()]?.label || '';
   });
 
   const dateLabel = useDerivedValue(() => {
@@ -61,7 +61,7 @@ export function CurrentPriceData({ chartIndex, charts, currentPrice }: Props) {
   return (
     <View style={{ alignItems: 'center' }}>
       <Label text={lastPrice} />
-      <Label text={dateRange} />
+      <Label text={dataSetLabel} />
       <Label text={dateLabel as any} />
     </View>
   );

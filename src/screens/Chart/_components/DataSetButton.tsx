@@ -13,17 +13,17 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface Props {
   currentChartIndex: SharedValue<number>;
-  onChangeTimeSlice: (index: number) => void;
-  timeSliceIndex: number;
-  timeSliceLabel: string;
+  index: number;
+  label: string;
+  onSelect: (index: number) => void;
   transition: SharedValue<number>;
 }
 
-export function TimeSliceButton({
+export function DataSetButton({
   currentChartIndex,
-  onChangeTimeSlice,
-  timeSliceIndex,
-  timeSliceLabel,
+  index,
+  label,
+  onSelect,
   transition,
 }: Props) {
   const theme = useTheme();
@@ -33,10 +33,10 @@ export function TimeSliceButton({
       transition.get(),
       [0, 1],
       [
-        currentChartIndex.get() === timeSliceIndex
+        currentChartIndex.get() === index
           ? theme.colors.gray200
           : theme.colors.purple500,
-        currentChartIndex.get() === timeSliceIndex
+        currentChartIndex.get() === index
           ? theme.colors.purple500
           : theme.colors.gray200,
       ],
@@ -48,10 +48,10 @@ export function TimeSliceButton({
       transition.get(),
       [0, 1],
       [
-        currentChartIndex.get() === timeSliceIndex
+        currentChartIndex.get() === index
           ? theme.colors.gray400
           : theme.colors.white,
-        currentChartIndex.get() === timeSliceIndex
+        currentChartIndex.get() === index
           ? theme.colors.white
           : theme.colors.gray400,
       ],
@@ -61,7 +61,7 @@ export function TimeSliceButton({
   return (
     <AnimatedPressable
       onPress={() => {
-        onChangeTimeSlice(timeSliceIndex);
+        onSelect(index);
       }}
       style={[buttonStyle, { borderRadius: 8, padding: 16 }]}
     >
@@ -70,10 +70,10 @@ export function TimeSliceButton({
           labelStyle,
           { fontSize: 16, fontWeight: 'bold', lineHeight: 24 },
         ]}
-        text={timeSliceLabel}
+        text={label}
       />
     </AnimatedPressable>
   );
 }
 
-export default TimeSliceButton;
+export default DataSetButton;

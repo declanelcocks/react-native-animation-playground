@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Dimensions, Text, View } from 'react-native';
 
 import Chart from './Chart';
-import { oneDayTimeSlice, oneMonthTimeSlice } from './data';
+import { dataSetA, dataSetB } from './data';
 
 export function ChartScreen() {
   const [type, setType] = useState<'bar-scrollable' | 'bar' | 'candlestick' | 'line'>('candlestick');
@@ -59,7 +59,7 @@ export function ChartScreen() {
       </View>
 
       <Chart
-        data={[oneDayTimeSlice, oneMonthTimeSlice]}
+        dataSets={[dataSetA, dataSetB]}
         height={200}
         labelsPosition={labelPosition}
         type={type}

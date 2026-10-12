@@ -5,23 +5,21 @@ import { parse, Path as RedashPath } from 'react-native-redash';
 
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
 import { formatNumber } from './formatters';
-import { Quote, TimeSlice } from './types';
+import { DataSet, Quote } from './types';
 
-export type ChartType = 'bar' | 'bar-scrollable' | 'candlestick' | 'line';
+export type ChartType = 'bar-scrollable' | 'bar' | 'candlestick' | 'line';
 
 export const X_MARGIN = 32;
 export const Y_MARGIN = 4;
 
 export interface Chart {
   data: FormattedItem[];
-  dateRangeLabel: string;
   getItemAtX(x: number): FormattedItemWithIndex;
-  intervalLabel: string;
+  label: string;
   path: RedashPath;
   rawPath: string;
   scaleBody(v: number): number;
   scaleY: ScaleLinear<number, number>;
-  timeSliceLabel: string;
   trend: 'negative' | 'positive';
   yAxisLabels?: YAxisLabel[];
 }
@@ -84,12 +82,16 @@ const getHighLowDomain = (items: FormattedItem[]): [number, number] => {
   return [Math.min(...values), Math.max(...values)];
 };
 
-const getValueDomain = (items: FormattedItem[], paddingPct = 0.1): [number, number] => {
+const getValueDomain = (
+  items: FormattedItem[],
+  paddingPct = 0.1,
+): [number, number] => {
   const values = items.map((d) => d.value).filter((v) => !Number.isNaN(v));
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min;
-  const padding = range > 0 ? range * paddingPct : Math.abs(max) * paddingPct || paddingPct;
+  const padding =
+    range > 0 ? range * paddingPct : Math.abs(max) * paddingPct || paddingPct;
   return [min - padding, max + padding];
 };
 
@@ -139,9 +141,7 @@ const buildChartPath = (
 
   if (type === 'candlestick') {
     const step = effectiveWidth / items.length;
-    xScaleRange = items.map(
-      (_, i) => leftOffset + step / 2 + step * i,
-    );
+    xScaleRange = items.map((_, i) => leftOffset + step / 2 + step * i);
   } else {
     const step = effectiveWidth / (items.length - 1 || 1);
     xScaleRange = items.map((_, i) => leftOffset + step * i);
@@ -216,44 +216,47 @@ export const buildCharts = (
     height: number;
     width: number;
   },
-  items: TimeSlice[],
+  dataSets: DataSet[],
   type: ChartType,
   labelsPosition?: 'left' | 'right',
 ): BuildChartsResult => {
-  const result = items.reduce(
-    (acc: BuildChartsResult, item) => {
-      const timeSliceLabel = `${item.timeSliceAmount}${item.timeSliceType}`;
-      const dateRangeLabel = `${item.timeSliceAmount}${item.timeSliceType}`;
-      const intervalLabel = `${item.timeSliceAmount}${item.timeSliceType}`;
+  const result = dataSets.reduce(
+    (acc: BuildChartsResult, dataSet) => {
+      const { data, label } = dataSet;
 
       const emptyMainChart: Chart = {
         data: [],
-        dateRangeLabel,
         getItemAtX: () => null as unknown as FormattedItemWithIndex,
-        intervalLabel,
+        label,
         path: null as unknown as RedashPath,
         rawPath: '',
         scaleBody: () => 0,
         scaleY: scaleLinear<number, number>(),
-        timeSliceLabel,
         trend: 'negative',
         yAxisLabels: [],
       };
 
-      if (item.historicalPrices?.length === 0) {
+      if (data.length === 0) {
         acc.mainCharts.push(emptyMainChart);
 
         return acc;
       }
 
-      const prices = [...(item.historicalPrices ?? [])];
+      const prices = [...data];
 
       const priceData = dataFormatter(prices, 'close');
-      const yDomain = type === 'candlestick'
-        ? getHighLowDomain(priceData)
-        : getValueDomain(priceData);
+      const yDomain =
+        type === 'candlestick'
+          ? getHighLowDomain(priceData)
+          : getValueDomain(priceData);
 
-      const chart = buildPathForChart(size, priceData, yDomain, type, labelsPosition);
+      const chart = buildPathForChart(
+        size,
+        priceData,
+        yDomain,
+        type,
+        labelsPosition,
+      );
 
       if (!chart.rawPath) {
         acc.mainCharts.push(emptyMainChart);
@@ -262,13 +265,13 @@ export const buildCharts = (
 
       const lastChange = chart.data.at(-1)?.change;
       const trend: 'negative' | 'positive' =
-        lastChange !== undefined && Number(lastChange) >= 0 ? 'positive' : 'negative';
+        lastChange !== undefined && Number(lastChange) >= 0
+          ? 'positive'
+          : 'negative';
 
       const mainChart: Chart = {
-        dateRangeLabel,
-        intervalLabel,
+        label,
         path: parse(chart.rawPath),
-        timeSliceLabel,
         trend,
         ...chart,
       };

@@ -14,22 +14,28 @@ import BarChart from './_components/BarChart';
 import CandlestickChart from './_components/CandlestickChart';
 import CandlestickChartCursor from './_components/CandlestickChartCursor';
 import CurrentPriceData from './_components/CurrentPriceData';
+import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import ScrollableBarChart from './_components/ScrollableBarChart';
-import TimeSliceButton from './_components/TimeSliceButton';
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
-import { TimeSlice } from './types';
+import { DataSet } from './types';
 import { buildCharts, FormattedItemWithIndex, Y_MARGIN } from './utils';
 interface ChartProps {
-  data: TimeSlice[];
+  dataSets: DataSet[];
   height: number;
   labelsPosition?: 'left' | 'right';
   type: 'bar-scrollable' | 'bar' | 'candlestick' | 'line';
   width: number;
 }
 
-function Example({ data, height, labelsPosition, type, width }: ChartProps) {
+function Example({
+  dataSets,
+  height,
+  labelsPosition,
+  type,
+  width,
+}: ChartProps) {
   const transition = useSharedValue(1);
   const isCursorActive = useSharedValue(false);
   const previousChartIndex = useSharedValue(0);
@@ -40,8 +46,8 @@ function Example({ data, height, labelsPosition, type, width }: ChartProps) {
   const lineChartEndX = width - rightOffset;
 
   const { mainCharts: charts } = useMemo(
-    () => buildCharts({ height, width }, data, type, labelsPosition),
-    [data, type, height, width, labelsPosition],
+    () => buildCharts({ height, width }, dataSets, type, labelsPosition),
+    [dataSets, type, height, width, labelsPosition],
   );
 
   const translation = useVector() as {
@@ -228,7 +234,7 @@ function Example({ data, height, labelsPosition, type, width }: ChartProps) {
       currentPrice.set({ ...dataPoint, index: dataPointIndex });
     });
 
-  const updateTimeSlice = useCallback(
+  const selectDataSet = useCallback(
     (index: number) => {
       if (index === currentChartIndex.get()) return;
 
@@ -385,12 +391,12 @@ function Example({ data, height, labelsPosition, type, width }: ChartProps) {
 
       <View style={{ flexDirection: 'row', gap: 16, marginTop: 16 }}>
         {charts.map((chart, index) => (
-          <TimeSliceButton
+          <DataSetButton
             currentChartIndex={currentChartIndex}
+            index={index}
             key={index}
-            onChangeTimeSlice={updateTimeSlice}
-            timeSliceIndex={index}
-            timeSliceLabel={chart.dateRangeLabel}
+            label={chart.label}
+            onSelect={selectDataSet}
             transition={transition}
           />
         ))}

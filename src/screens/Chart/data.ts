@@ -1,5 +1,5 @@
-export const oneDayTimeSlice = {
-  historicalPrices: [
+export const dataSetA = {
+  data: [
     {
       ask: null,
       bid: null,
@@ -358,12 +358,11 @@ export const oneDayTimeSlice = {
       volume: 257_400,
     },
   ],
-  timeSliceAmount: 1,
-  timeSliceType: 'D',
+  label: 'A',
 };
 
-export const oneMonthTimeSlice = {
-  historicalPrices: [
+export const dataSetB = {
+  data: [
     {
       ask: null,
       bid: null,
@@ -722,6 +721,5 @@ export const oneMonthTimeSlice = {
       volume: 257_400,
     },
   ],
-  timeSliceAmount: 1,
-  timeSliceType: 'M',
+  label: 'B',
 };
