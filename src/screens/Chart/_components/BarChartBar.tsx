@@ -6,15 +6,15 @@ import { Rect } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
-import { FormattedItemWithIndex, Y_MARGIN } from '../utils';
+import { ChartPoint, Y_MARGIN } from '../utils';
 
 interface BarChartBarProps {
   barWidth: number;
   calculateBarHeight: (size: number) => number;
   calculateYValue: (value: number) => number;
   chartHeight: number;
-  currentPrice: SharedValue<FormattedItemWithIndex | null>;
-  data: FormattedItemWithIndex;
+  currentPrice: SharedValue<ChartPoint | null>;
+  data: ChartPoint;
   leftOffset: number;
   onPress?: () => void;
   step: number;
@@ -35,9 +35,9 @@ export function BarChartBar({
 }: BarChartBarProps) {
   const theme = useTheme();
 
-  const { close, index } = data;
+  const { index, value } = data;
   const x = index * step;
-  const barHeight = calculateBarHeight(close ?? 0);
+  const barHeight = calculateBarHeight(value);
 
   const animatedRectProps = useAnimatedProps(() => {
     const isActive = index === currentPrice.get()?.index;
@@ -58,7 +58,7 @@ export function BarChartBar({
         height={Math.max(barHeight, 2)}
         onPress={onPress}
         transform={[
-          { translateY: Y_MARGIN + calculateYValue(close ?? 0) },
+          { translateY: Y_MARGIN + calculateYValue(value) },
           { translateX: x + step / 2 - barWidth / 2 + leftOffset },
         ]}
         width={barWidth}

@@ -6,14 +6,14 @@ import { Line, Rect } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
-import { FormattedItemWithIndex, Y_MARGIN } from '../utils';
+import { ChartPoint, Y_MARGIN } from '../utils';
 
 interface CandlestickChartCandleProps {
   calculateCandleHeight: (size: number) => number;
   calculateYValue: (value: number) => number;
   candleWidth: number;
-  currentPrice: SharedValue<FormattedItemWithIndex | null>;
-  data: FormattedItemWithIndex;
+  currentPrice: SharedValue<ChartPoint | null>;
+  data: ChartPoint;
   leftOffset: number;
   step: number;
 }

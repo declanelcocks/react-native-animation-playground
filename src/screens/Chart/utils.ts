@@ -5,16 +5,14 @@ import { parse, Path as RedashPath } from 'react-native-redash';
 
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
 import { formatNumber } from './formatters';
-import { DataSet, Quote } from './types';
-
-export type ChartType = 'bar-scrollable' | 'bar' | 'candlestick' | 'line';
+import { ChartData, ChartType, DataSet } from './types';
 
 export const X_MARGIN = 32;
 export const Y_MARGIN = 4;
 
 export interface Chart {
-  data: FormattedItem[];
-  getItemAtX(x: number): FormattedItemWithIndex;
+  data: ChartPoint[];
+  getItemAtX(x: number): ChartPoint;
   label: string;
   path: RedashPath;
   rawPath: string;
@@ -24,26 +22,18 @@ export interface Chart {
   yAxisLabels?: YAxisLabel[];
 }
 
-export interface FormattedItem {
-  change?: string;
-  changeRatio?: string;
+/**
+ * A data point normalised for rendering. `value` drives the line path, bar
+ * height and readout; the OHLC fields are only set for candlestick charts.
+ */
+export interface ChartPoint {
   close?: number;
-  currencySymbol?: string;
-  date: number;
   high?: number;
-  isMockData?: boolean;
-  isRealTime?: boolean;
+  index: number;
+  label?: string;
   low?: number;
   open?: number;
-  quoteType?: 'close' | 'delayed' | 'realtime';
-  relativeDateTimeLabel?: string;
   value: number;
-  volume?: number;
-  xAxisPct?: number;
-}
-
-export interface FormattedItemWithIndex extends FormattedItem {
-  index: number;
 }
 
 export interface YAxisLabel {
@@ -51,31 +41,28 @@ export interface YAxisLabel {
   y: number;
 }
 
-const dataFormatter = (data: Quote[], valueKey: string): FormattedItem[] => {
-  const formattedData = data
-    .map((d: Quote) => {
-      return {
-        ...d,
-        close: Number(d.close),
-        date: d.date ? new Date(d.date).valueOf() : null,
-        high: Number(d.high),
-        low: Number(d.low),
-        open: Number(d.open),
-        quoteType:
-          d.isRealTime === true
-            ? ('realtime' as const)
-            : d.isRealTime === false
-              ? ('delayed' as const)
-              : ('close' as const),
-        value: Number(d[valueKey as keyof Quote]),
-      };
-    })
-    .filter((d) => !!d.value && !!d.date);
+const toChartPoints = (points: Omit<ChartPoint, 'index'>[]): ChartPoint[] =>
+  points
+    .filter((point) => Number.isFinite(point.value))
+    .map((point, index) => ({ ...point, index }));
 
-  return formattedData as FormattedItem[];
+const normaliseDataSets = (chartData: ChartData): DataSet<ChartPoint>[] => {
+  if (chartData.type === 'candlestick') {
+    return chartData.dataSets.map(({ data, label }) => ({
+      data: toChartPoints(
+        data.map((point) => ({ ...point, value: point.close })),
+      ),
+      label,
+    }));
+  }
+
+  return chartData.dataSets.map(({ data, label }) => ({
+    data: toChartPoints(data),
+    label,
+  }));
 };
 
-const getHighLowDomain = (items: FormattedItem[]): [number, number] => {
+const getHighLowDomain = (items: ChartPoint[]): [number, number] => {
   const values = items
     .flatMap(({ high, low }) => [high, low])
     .filter((v): v is number => v !== undefined);
@@ -83,7 +70,7 @@ const getHighLowDomain = (items: FormattedItem[]): [number, number] => {
 };
 
 const getValueDomain = (
-  items: FormattedItem[],
+  items: ChartPoint[],
   paddingPct = 0.1,
 ): [number, number] => {
   const values = items.map((d) => d.value).filter((v) => !Number.isNaN(v));
@@ -122,20 +109,20 @@ const buildYAxisLabels = (
 
 const buildChartPath = (
   size: { height: number; width: number },
-  items: FormattedItem[],
+  items: ChartPoint[],
   yDomain: [number, number],
   type: ChartType,
   smooth?: boolean,
   labelsPosition?: 'left' | 'right',
 ): {
-  data: FormattedItem[];
-  getItemAtX(x: number): FormattedItemWithIndex;
+  data: ChartPoint[];
+  getItemAtX(x: number): ChartPoint;
   rawPath: string;
   scaleY: ScaleLinear<number, number>;
 } => {
   const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
   const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
-  const xScaleDomain = items.map((p) => p.date.toString());
+  const xScaleDomain = items.map((p) => p.index.toString());
   let xScaleRange;
   const effectiveWidth = size.width - Y_AXIS_LABELS_WIDTH;
 
@@ -154,7 +141,7 @@ const buildChartPath = (
     .x(([, x]) => scaleX(x.toString()) as number)
     .y(([y]) => scaleY(y))
     .curve(smooth ? curveMonotoneX : curveLinear)(
-    items.map((d) => [d.value, d.date]),
+    items.map((d) => [d.value, d.index]),
   );
 
   const getItemAtX = (x: number) => {
@@ -175,13 +162,13 @@ const buildChartPath = (
 
 const buildPathForChart = (
   size: { height: number; width: number },
-  items: FormattedItem[],
+  items: ChartPoint[],
   yDomain: [number, number],
   type: ChartType,
   labelsPosition?: 'left' | 'right',
 ): {
-  data: FormattedItem[];
-  getItemAtX(x: number): FormattedItemWithIndex;
+  data: ChartPoint[];
+  getItemAtX(x: number): ChartPoint;
   rawPath: string;
   scaleBody(v: number): number;
   scaleY: ScaleLinear<number, number>;
@@ -216,23 +203,24 @@ export const buildCharts = (
     height: number;
     width: number;
   },
-  dataSets: DataSet[],
-  type: ChartType,
+  chartData: ChartData,
   labelsPosition?: 'left' | 'right',
 ): BuildChartsResult => {
-  const result = dataSets.reduce(
+  const { type } = chartData;
+
+  const result = normaliseDataSets(chartData).reduce(
     (acc: BuildChartsResult, dataSet) => {
       const { data, label } = dataSet;
 
       const emptyMainChart: Chart = {
         data: [],
-        getItemAtX: () => null as unknown as FormattedItemWithIndex,
+        getItemAtX: () => null as unknown as ChartPoint,
         label,
         path: null as unknown as RedashPath,
         rawPath: '',
         scaleBody: () => 0,
         scaleY: scaleLinear<number, number>(),
-        trend: 'negative',
+        trend: 'positive',
         yAxisLabels: [],
       };
 
@@ -242,17 +230,12 @@ export const buildCharts = (
         return acc;
       }
 
-      const prices = [...data];
-
-      const priceData = dataFormatter(prices, 'close');
       const yDomain =
-        type === 'candlestick'
-          ? getHighLowDomain(priceData)
-          : getValueDomain(priceData);
+        type === 'candlestick' ? getHighLowDomain(data) : getValueDomain(data);
 
       const chart = buildPathForChart(
         size,
-        priceData,
+        data,
         yDomain,
         type,
         labelsPosition,
@@ -263,11 +246,10 @@ export const buildCharts = (
         return acc;
       }
 
-      const lastChange = chart.data.at(-1)?.change;
+      const firstValue = data[0].value;
+      const lastValue = data.at(-1)?.value ?? firstValue;
       const trend: 'negative' | 'positive' =
-        lastChange !== undefined && Number(lastChange) >= 0
-          ? 'positive'
-          : 'negative';
+        lastValue >= firstValue ? 'positive' : 'negative';
 
       const mainChart: Chart = {
         label,

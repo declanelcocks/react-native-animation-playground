@@ -3,10 +3,35 @@ import { Button, Dimensions, Text, View } from 'react-native';
 
 import Chart from './Chart';
 import { dataSetA, dataSetB } from './data';
+import {
+  CandlestickDataPoint,
+  ChartData,
+  ChartType,
+  DataPoint,
+  DataSet,
+} from './types';
+
+const toDataPoints = ({
+  data,
+  label,
+}: DataSet<CandlestickDataPoint>): DataSet<DataPoint> => ({
+  data: data.map((point) => ({ label: point.label, value: point.close })),
+  label,
+});
+
+const candlestickDataSets = [dataSetA, dataSetB];
+const valueDataSets = candlestickDataSets.map((dataSet) =>
+  toDataPoints(dataSet),
+);
 
 export function ChartScreen() {
-  const [type, setType] = useState<'bar-scrollable' | 'bar' | 'candlestick' | 'line'>('candlestick');
+  const [type, setType] = useState<ChartType>('candlestick');
   const [labelPosition, setLabelPosition] = useState<'left' | 'right'>('left');
+
+  const chartData: ChartData =
+    type === 'candlestick'
+      ? { dataSets: candlestickDataSets, type }
+      : { dataSets: valueDataSets, type };
 
   return (
     <>
@@ -59,10 +84,9 @@ export function ChartScreen() {
       </View>
 
       <Chart
-        dataSets={[dataSetA, dataSetB]}
+        {...chartData}
         height={200}
         labelsPosition={labelPosition}
-        type={type}
         width={Dimensions.get('window').width - 32}
       />
     </>

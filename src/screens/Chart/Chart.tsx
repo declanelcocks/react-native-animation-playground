@@ -19,15 +19,13 @@ import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import ScrollableBarChart from './_components/ScrollableBarChart';
 import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
-import { DataSet } from './types';
-import { buildCharts, FormattedItemWithIndex, Y_MARGIN } from './utils';
-interface ChartProps {
-  dataSets: DataSet[];
+import { ChartData } from './types';
+import { buildCharts, ChartPoint, Y_MARGIN } from './utils';
+type ChartProps = {
   height: number;
   labelsPosition?: 'left' | 'right';
-  type: 'bar-scrollable' | 'bar' | 'candlestick' | 'line';
   width: number;
-}
+} & ChartData;
 
 function Example({
   dataSets,
@@ -46,7 +44,14 @@ function Example({
   const lineChartEndX = width - rightOffset;
 
   const { mainCharts: charts } = useMemo(
-    () => buildCharts({ height, width }, dataSets, type, labelsPosition),
+    () =>
+      buildCharts(
+        { height, width },
+        // `dataSets` and `type` come from the same ChartData props, so they
+        // still match even though destructuring loses that link for TS.
+        { dataSets, type } as ChartData,
+        labelsPosition,
+      ),
     [dataSets, type, height, width, labelsPosition],
   );
 
@@ -55,7 +60,7 @@ function Example({
     y: SharedValue<number>;
   };
 
-  const currentPrice = useSharedValue<FormattedItemWithIndex | null>(null);
+  const currentPrice = useSharedValue<ChartPoint | null>(null);
 
   useEffect(() => {
     if (type === 'line') {
@@ -106,21 +111,13 @@ function Example({
     };
   });
 
-  const previousTrend = useDerivedValue(() => {
-    const chartData = charts[previousChartIndex.get()]?.data;
-    const firstClose = chartData[0]?.close;
-    const lastClose = chartData[chartData.length - 1]?.close;
-    if (firstClose == null || lastClose == null) return 'positive';
-    return lastClose >= firstClose ? 'positive' : 'negative';
-  });
+  const previousTrend = useDerivedValue(
+    () => charts[previousChartIndex.get()]?.trend ?? 'positive',
+  );
 
-  const currentTrend = useDerivedValue(() => {
-    const chartData = charts[currentChartIndex.get()]?.data;
-    const firstClose = chartData[0]?.close;
-    const lastClose = chartData[chartData.length - 1]?.close;
-    if (firstClose == null || lastClose == null) return 'positive';
-    return lastClose >= firstClose ? 'positive' : 'negative';
-  });
+  const currentTrend = useDerivedValue(
+    () => charts[currentChartIndex.get()]?.trend ?? 'positive',
+  );
 
   const onGestureEvent = Gesture.Pan()
     .activeOffsetX(32)

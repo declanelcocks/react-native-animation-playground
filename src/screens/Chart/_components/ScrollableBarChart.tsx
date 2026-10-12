@@ -6,7 +6,7 @@ import { runOnJS } from 'react-native-worklets';
 
 import { useTheme } from '@/theme';
 
-import { Chart, FormattedItemWithIndex, Y_MARGIN } from '../utils';
+import { Chart, ChartPoint, Y_MARGIN } from '../utils';
 import BarChartBar from './BarChartBar';
 import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
 
@@ -15,7 +15,7 @@ interface Props {
   barWidth?: number;
   charts: Chart[];
   currentChartIndex: SharedValue<number>;
-  currentPrice: SharedValue<FormattedItemWithIndex | null>;
+  currentPrice: SharedValue<ChartPoint | null>;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;

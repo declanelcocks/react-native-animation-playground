@@ -4,14 +4,14 @@ import { SharedValue, useAnimatedReaction } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 import { runOnJS } from 'react-native-worklets';
 
-import { Chart, FormattedItemWithIndex, X_MARGIN, Y_MARGIN } from '../utils';
+import { Chart, ChartPoint, X_MARGIN, Y_MARGIN } from '../utils';
 import CandlestickChartCandle from './CandlestickChartCandle';
 import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
 
 interface Props {
   charts: Chart[];
   currentChartIndex: SharedValue<number>;
-  currentPrice: SharedValue<FormattedItemWithIndex | null>;
+  currentPrice: SharedValue<ChartPoint | null>;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
