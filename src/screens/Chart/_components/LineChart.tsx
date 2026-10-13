@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useId } from 'react';
 import { View } from 'react-native';
 import Animated, {
   interpolate,
@@ -44,6 +44,11 @@ export function LineChart({
   width,
 }: PropsWithChildren<Props>) {
   const theme = useTheme();
+  // Gradient IDs are global to the page, so each chart needs its own. React's
+  // IDs contain `:`, which isn't valid inside `url(#...)`.
+  const gradientId = useId().replaceAll(':', '');
+  const positiveGradientId = `${gradientId}-positive`;
+  const negativeGradientId = `${gradientId}-negative`;
   const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
   const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
 
@@ -167,9 +172,17 @@ export function LineChart({
           width={width}
         />
 
-        <Gradient trend="positive" {...{ translateY: Y_MARGIN }} />
+        <Gradient
+          id={positiveGradientId}
+          trend="positive"
+          {...{ translateY: Y_MARGIN }}
+        />
 
-        <Gradient trend="negative" {...{ translateY: Y_MARGIN }} />
+        <Gradient
+          id={negativeGradientId}
+          trend="negative"
+          {...{ translateY: Y_MARGIN }}
+        />
 
         <AnimatedPath
           animatedProps={animatedProps}
@@ -180,13 +193,13 @@ export function LineChart({
 
         <AnimatedPath
           animatedProps={animatedNegativeGradientProps}
-          fill="url(#negative)"
+          fill={`url(#${negativeGradientId})`}
           transform={[{ translateY: Y_MARGIN }]}
         />
 
         <AnimatedPath
           animatedProps={animatedPositiveGradientProps}
-          fill="url(#positive)"
+          fill={`url(#${positiveGradientId})`}
           transform={[{ translateY: Y_MARGIN }]}
         />
       </Svg>
