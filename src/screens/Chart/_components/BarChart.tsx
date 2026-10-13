@@ -1,8 +1,7 @@
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren } from 'react';
 import { View } from 'react-native';
-import { SharedValue, useAnimatedReaction } from 'react-native-reanimated';
+import { SharedValue } from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
-import { runOnJS } from 'react-native-worklets';
 
 import { useTheme } from '@/theme';
 
@@ -18,6 +17,7 @@ import BarChartBar from './BarChartBar';
 import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 interface Props {
+  chart: BuiltChart;
   charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
   currentPoint: SharedValue<ChartPoint | null>;
@@ -27,6 +27,7 @@ interface Props {
 }
 
 export function BarChart({
+  chart,
   charts,
   children,
   currentChartIndex,
@@ -36,20 +37,8 @@ export function BarChart({
   width,
 }: PropsWithChildren<Props>) {
   const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const [chartIndex, setChartIndex] = useState<number>();
-
-  useAnimatedReaction(
-    () => currentChartIndex.value,
-    (current) => {
-      if (current !== chartIndex) {
-        runOnJS(setChartIndex)(current);
-      }
-    },
-  );
-
   const theme = useTheme();
   const barChartWidth = width - Y_AXIS_LABELS_WIDTH;
-  const currentChart = charts[currentChartIndex.get()];
 
   return (
     <View style={{ width: width + X_MARGIN }}>
@@ -68,24 +57,23 @@ export function BarChart({
           width={width}
         />
 
-        {currentChart.data.map((d, i) => {
+        {chart.data.map((d, i) => {
           return (
             <BarChartBar
               barWidth={Math.min(
-                barChartWidth / currentChart.data.length -
-                  CANDLESTICK_MARGIN * 2,
+                barChartWidth / chart.data.length - CANDLESTICK_MARGIN * 2,
                 MAX_BAR_WIDTH,
               )}
               calculateBarHeight={(value: number) =>
-                height - currentChart.scaleY(value)
+                height - chart.scaleY(value)
               }
-              calculateYValue={(value: number) => currentChart.scaleY(value)}
+              calculateYValue={(value: number) => chart.scaleY(value)}
               chartHeight={height}
               currentPoint={currentPoint}
               data={{ ...d, index: i }}
               key={i}
               leftOffset={leftOffset}
-              step={barChartWidth / currentChart.data.length}
+              step={barChartWidth / chart.data.length}
             />
           );
         })}

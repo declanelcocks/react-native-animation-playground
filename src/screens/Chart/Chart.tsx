@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -32,6 +32,9 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
   const isCursorActive = useSharedValue(false);
   const previousChartIndex = useSharedValue(0);
   const currentChartIndex = useSharedValue(0);
+  // JS-side mirror of `currentChartIndex`, so the bar and candlestick charts
+  // re-render with the selected data set.
+  const [chartIndex, setChartIndex] = useState(0);
 
   const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
   const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
@@ -232,6 +235,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
       previousChartIndex.set(currentChartIndex.get());
 
       currentChartIndex.set(index);
+      setChartIndex(index);
 
       transition.set(0);
       transition.set(
@@ -268,6 +272,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
       previousChartIndex,
       transition,
       charts,
+      setChartIndex,
       translation.x,
       translation.y,
       lineChartEndX,
@@ -289,6 +294,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
         {type === 'candlestick' && (
           <View>
             <CandlestickChart
+              chart={charts[chartIndex]}
               charts={charts}
               currentChartIndex={currentChartIndex}
               currentPoint={currentPoint}
@@ -315,6 +321,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
         {type === 'bar' && (
           <View>
             <BarChart
+              chart={charts[chartIndex]}
               charts={charts}
               currentChartIndex={currentChartIndex}
               currentPoint={currentPoint}
@@ -340,6 +347,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
 
         {type === 'bar-scrollable' && (
           <ScrollableBarChart
+            chart={charts[chartIndex]}
             charts={charts}
             currentChartIndex={currentChartIndex}
             currentPoint={currentPoint}

@@ -1,8 +1,7 @@
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren } from 'react';
 import { View } from 'react-native';
-import { SharedValue, useAnimatedReaction } from 'react-native-reanimated';
+import { SharedValue } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
-import { runOnJS } from 'react-native-worklets';
 
 import {
   CANDLESTICK_MARGIN,
@@ -16,6 +15,7 @@ import CandlestickChartCandle from './CandlestickChartCandle';
 import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 interface Props {
+  chart: BuiltChart;
   charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
   currentPoint: SharedValue<ChartPoint | null>;
@@ -25,6 +25,7 @@ interface Props {
 }
 
 export function CandlestickChart({
+  chart,
   charts,
   children,
   currentChartIndex,
@@ -34,20 +35,7 @@ export function CandlestickChart({
   width,
 }: PropsWithChildren<Props>) {
   const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const [chartIndex, setChartIndex] = useState<number>();
-
-  useAnimatedReaction(
-    () => currentChartIndex.value,
-    (current) => {
-      if (current !== chartIndex) {
-        runOnJS(setChartIndex)(current);
-      }
-    },
-  );
-
   const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
-
-  const currentChart = charts[currentChartIndex.get()];
 
   return (
     <View style={{ width: width + X_MARGIN }}>
@@ -66,15 +54,13 @@ export function CandlestickChart({
           width={width}
         />
 
-        {currentChart.data.map((d, i) => {
+        {chart.data.map((d, i) => {
           return (
             <CandlestickChartCandle
-              calculateCandleHeight={(size: number) =>
-                currentChart.scaleBody(size)
-              }
-              calculateYValue={(value: number) => currentChart.scaleY(value)}
+              calculateCandleHeight={(size: number) => chart.scaleBody(size)}
+              calculateYValue={(value: number) => chart.scaleY(value)}
               candleWidth={Math.min(
-                candlestickChartWidth / currentChart.data.length -
+                candlestickChartWidth / chart.data.length -
                   CANDLESTICK_MARGIN * 2,
                 MAX_BAR_WIDTH,
               )}
@@ -82,7 +68,7 @@ export function CandlestickChart({
               data={{ ...d, index: i }}
               key={i}
               leftOffset={leftOffset}
-              step={candlestickChartWidth / currentChart.data.length}
+              step={candlestickChartWidth / chart.data.length}
             />
           );
         })}
