@@ -47,9 +47,7 @@ export function BarChart({
                   barChartWidth / chart.data.length - barMargin * 2,
                   maxBarWidth,
                 )}
-                calculateBarHeight={(value: number) =>
-                  height - chart.scaleY(value)
-                }
+                baselineY={chart.baselineY}
                 calculateYValue={(value: number) => chart.scaleY(value)}
                 chartHeight={height}
                 currentPoint={currentPoint}
@@ -67,8 +65,8 @@ export function BarChart({
             transform={[{ translateY: yMargin }]}
             x1={leftOffset}
             x2={leftOffset + barChartWidth}
-            y1={height}
-            y2={height}
+            y1={chart.baselineY}
+            y2={chart.baselineY}
           />
         </>
       }

@@ -50,6 +50,7 @@ function Chart({ theme, ...props }: ChartProps) {
 function ChartContent({
   dataSets,
   height,
+  includeZero,
   labelsPosition,
   type,
   width,
@@ -72,13 +73,13 @@ function ChartContent({
     () =>
       buildCharts(
         { height, width },
-        // `dataSets` and `type` come from the same ChartData props, so they
+        // `dataSets`, `includeZero` and `type` come from the same ChartData props, so they
         // still match even though destructuring loses that link for TS.
-        { dataSets, type } as ChartData,
+        { dataSets, includeZero, type } as ChartData,
         yAxisWidth,
         labelsPosition,
       ),
-    [dataSets, type, height, width, yAxisWidth, labelsPosition],
+    [dataSets, includeZero, type, height, width, yAxisWidth, labelsPosition],
   );
 
   const translation = useVector() as {

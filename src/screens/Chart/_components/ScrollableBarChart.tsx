@@ -67,8 +67,8 @@ export function ScrollableBarChart({
             transform={[{ translateY: yMargin }]}
             x1={leftOffset}
             x2={width - rightOffset}
-            y1={height}
-            y2={height}
+            y1={chart.baselineY}
+            y2={chart.baselineY}
           />
         </Svg>
       </View>
@@ -85,9 +85,7 @@ export function ScrollableBarChart({
             {chart.data.map((d, i) => (
               <BarChartBar
                 barWidth={barWidth}
-                calculateBarHeight={(value: number) =>
-                  height - chart.scaleY(value)
-                }
+                baselineY={chart.baselineY}
                 calculateYValue={(value: number) => chart.scaleY(value)}
                 chartHeight={height}
                 currentPoint={currentPoint}

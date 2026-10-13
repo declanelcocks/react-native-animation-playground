@@ -9,7 +9,7 @@ import { ChartPoint } from '../utils';
 
 interface BarChartBarProps {
   barWidth: number;
-  calculateBarHeight: (size: number) => number;
+  baselineY: number;
   calculateYValue: (value: number) => number;
   chartHeight: number;
   currentPoint: SharedValue<ChartPoint | null>;
@@ -23,7 +23,7 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 export function BarChartBar({
   barWidth,
-  calculateBarHeight,
+  baselineY,
   calculateYValue,
   chartHeight,
   currentPoint,
@@ -37,7 +37,9 @@ export function BarChartBar({
 
   const { index, value } = data;
   const x = index * step;
-  const barHeight = calculateBarHeight(value);
+  const valueY = calculateYValue(value);
+  const barTop = Math.min(valueY, baselineY);
+  const barHeight = Math.abs(valueY - baselineY);
 
   const animatedRectProps = useAnimatedProps(() => {
     const isActive = index === currentPoint.get()?.index;
@@ -58,7 +60,7 @@ export function BarChartBar({
         height={Math.max(barHeight, 2)}
         onPress={onPress}
         transform={[
-          { translateY: yMargin + calculateYValue(value) },
+          { translateY: yMargin + barTop },
           { translateX: x + step / 2 - barWidth / 2 + leftOffset },
         ]}
         width={barWidth}

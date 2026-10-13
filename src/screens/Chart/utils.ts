@@ -7,6 +7,8 @@ import { formatNumber } from './formatters';
 import { ChartData, ChartType, DataSet } from './types';
 
 export interface BuiltChart {
+  /** The y position bars grow from. */
+  baselineY: number;
   data: ChartPoint[];
   getItemAtX(x: number): ChartPoint;
   label: string;
@@ -65,13 +67,34 @@ const getHighLowDomain = (items: ChartPoint[]): [number, number] => {
   return [Math.min(...values), Math.max(...values)];
 };
 
+// Bars grow from zero, so zero is one end of the domain and only the other end
+// is padded. The domain is padded at both ends when the values cross zero.
+const getZeroBasedDomain = (
+  min: number,
+  max: number,
+  paddingPct: number,
+): [number, number] => {
+  const lower = Math.min(0, min);
+  const upper = Math.max(0, max);
+  const range = upper - lower;
+
+  if (range === 0) return [0, 1];
+
+  const padding = range * paddingPct;
+  return [min < 0 ? lower - padding : lower, max > 0 ? upper + padding : upper];
+};
+
 const getValueDomain = (
   items: ChartPoint[],
+  includeZero: boolean,
   paddingPct = 0.1,
 ): [number, number] => {
   const values = items.map((d) => d.value).filter((v) => !Number.isNaN(v));
   const min = Math.min(...values);
   const max = Math.max(...values);
+
+  if (includeZero) return getZeroBasedDomain(min, max, paddingPct);
+
   const range = max - min;
   const padding =
     range > 0 ? range * paddingPct : Math.abs(max) * paddingPct || paddingPct;
@@ -163,8 +186,10 @@ const buildPathForChart = (
   yDomain: [number, number],
   type: ChartType,
   yAxisWidth: number,
+  includeZero: boolean,
   labelsPosition?: 'left' | 'right',
 ): {
+  baselineY: number;
   data: ChartPoint[];
   getItemAtX(x: number): ChartPoint;
   rawPath: string;
@@ -185,16 +210,19 @@ const buildPathForChart = (
 
   const yAxisLabels = buildYAxisLabels(yDomain[0], yDomain[1], size.height);
 
+  const chartPath = buildChartPath(
+    size,
+    items,
+    yDomain,
+    type,
+    yAxisWidth,
+    undefined,
+    labelsPosition,
+  );
+
   return {
-    ...buildChartPath(
-      size,
-      items,
-      yDomain,
-      type,
-      yAxisWidth,
-      undefined,
-      labelsPosition,
-    ),
+    ...chartPath,
+    baselineY: includeZero ? chartPath.scaleY(0) : size.height,
     scaleBody,
     yAxisLabels,
   };
@@ -213,13 +241,14 @@ export const buildCharts = (
   yAxisWidth: number,
   labelsPosition?: 'left' | 'right',
 ): BuildChartsResult => {
-  const { type } = chartData;
+  const { includeZero = false, type } = chartData;
 
   const result = normaliseDataSets(chartData).reduce(
     (acc: BuildChartsResult, dataSet) => {
       const { data, label } = dataSet;
 
       const emptyMainChart: BuiltChart = {
+        baselineY: 0,
         data: [],
         getItemAtX: () => null as unknown as ChartPoint,
         label,
@@ -238,7 +267,9 @@ export const buildCharts = (
       }
 
       const yDomain =
-        type === 'candlestick' ? getHighLowDomain(data) : getValueDomain(data);
+        type === 'candlestick'
+          ? getHighLowDomain(data)
+          : getValueDomain(data, includeZero);
 
       const chart = buildPathForChart(
         size,
@@ -246,6 +277,7 @@ export const buildCharts = (
         yDomain,
         type,
         yAxisWidth,
+        includeZero,
         labelsPosition,
       );
 

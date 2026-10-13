@@ -27,9 +27,22 @@ const valueDataSets = candlestickDataSets.map((dataSet) =>
   toDataPoints(dataSet),
 );
 
+const getChartData = (type: ChartType, includeZero: boolean): ChartData => {
+  if (type === 'candlestick') {
+    return { dataSets: candlestickDataSets, type };
+  }
+
+  if (type === 'line') {
+    return { dataSets: valueDataSets, type };
+  }
+
+  return { dataSets: valueDataSets, includeZero, type };
+};
+
 export function ChartScreen() {
   const { colors } = useTheme();
   const [type, setType] = useState<ChartType>('candlestick');
+  const [includeZero, setIncludeZero] = useState(false);
 
   // Follow the app's theme, including its dark variant.
   const chartTheme = useMemo<ChartThemeOverride>(
@@ -54,10 +67,8 @@ export function ChartScreen() {
   );
   const [labelPosition, setLabelPosition] = useState<'left' | 'right'>('left');
 
-  const chartData: ChartData =
-    type === 'candlestick'
-      ? { dataSets: candlestickDataSets, type }
-      : { dataSets: valueDataSets, type };
+  const chartData = getChartData(type, includeZero);
+  const isBarChart = type === 'bar' || type === 'bar-scrollable';
 
   return (
     <>
@@ -90,6 +101,27 @@ export function ChartScreen() {
             title="Scroll Bar"
           />
         </View>
+
+        {isBarChart ? (
+          <>
+            <Text>Bar baseline:</Text>
+
+            <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+              <Button
+                onPress={() => {
+                  setIncludeZero(false);
+                }}
+                title="Padded"
+              />
+              <Button
+                onPress={() => {
+                  setIncludeZero(true);
+                }}
+                title="Zero-based"
+              />
+            </View>
+          </>
+        ) : null}
 
         <Text>Label position:</Text>
 
