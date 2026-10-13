@@ -1,5 +1,4 @@
 const noValueConstant = '-';
-export const hiddenValueConstant = '***';
 
 const isNumber = (num?: number | string) => {
   'worklet';
@@ -29,13 +28,6 @@ export const round = (
   return result.toString().replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
-export const pct = (value?: null | number | string): any => {
-  'worklet';
-  return value != null && !Number.isNaN(Number(value))
-    ? `${round(Number(value) * 100, 2)}%`
-    : noValueConstant;
-};
-
 /**
  * Formats a currency
  * @param digits {minIntegerDigits}.{minFractionDigits}-{maxFractionDigits}.
@@ -44,7 +36,7 @@ export const pct = (value?: null | number | string): any => {
 export const formatNumber = (
   value?: number | string,
   digits = '1.2-2',
-  options?: { hidden?: boolean; invalidValueMessage?: string },
+  options?: { invalidValueMessage?: string },
 ) => {
   if (value == null) {
     return noValueConstant;
@@ -55,10 +47,6 @@ export const formatNumber = (
 
   if (Number.isNaN(num) && options?.invalidValueMessage)
     return options.invalidValueMessage;
-
-  if (options?.hidden) {
-    return hiddenValueConstant;
-  }
 
   const splitDigits = digits.split('.');
   const splitFractions = splitDigits[1].split('-');
@@ -71,31 +59,4 @@ export const formatNumber = (
     minimumFractionDigits,
     minimumIntegerDigits,
   }).format(num);
-};
-
-/**
- * Formats a price with 2 digits for USD or 3 for HKD
- * Optionally prepends the currency
- */
-export const formatPrice = (
-  value?: null | number,
-  _currencySymbol?: null | string,
-  currency?: null | string,
-  showDashForZero?: boolean,
-) => {
-  if (value == null) {
-    return noValueConstant;
-  }
-
-  if (showDashForZero && value === 0) {
-    return noValueConstant;
-  }
-
-  const number = formatNumber(value, '1.2-2');
-
-  return number === noValueConstant
-    ? number
-    : currency
-      ? `${currency} ${number}`
-      : number;
 };
