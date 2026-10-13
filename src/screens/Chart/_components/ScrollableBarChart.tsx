@@ -77,10 +77,8 @@ export function ScrollableBarChart({
             stroke={theme.colors.gray400}
             strokeWidth={1}
             transform={[{ translateY: Y_MARGIN }]}
-            x1={labelsPosition === 'left' ? leftOffset : 0}
-            x2={
-              labelsPosition === 'left' ? totalBarsWidth : width - rightOffset
-            }
+            x1={leftOffset}
+            x2={width - rightOffset}
             y1={height}
             y2={height}
           />
