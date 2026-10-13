@@ -1,6 +1,6 @@
 # Chart refactor: further suggestions
 
-Follow-ups for making `src/screens/Chart` reusable in other projects. They build on the refactor that:
+Follow-ups for making the chart reusable in other projects. The reusable code now lives in `src/components/Chart`; `src/screens/Chart` keeps only the playground (`ChartScreen`, `data.ts`). They build on the refactor that:
 
 - renamed `TimeSlice` to `DataSet` (`{ label, data }`)
 - replaced `Quote` with per-chart point types: `DataPoint = { value, label? }` for line and bar charts, and `CandlestickDataPoint = { open, high, low, close, label? }`
@@ -35,3 +35,18 @@ Duplication to remove (#7):
 - `YAxisLabels` and `YAxisLines` both draw the grid lines, so the lines are drawn twice.
 - `LineChart` has three near-identical `interpolatePath` blocks.
 - `Chart.tsx` repeats the step/clamp maths four times.
+
+## Status
+
+Done: #2, #4, #5, #6, #7, #8, #9, #10, #11, #12.
+
+- #2: colours and sizes come from `ChartTheme` (`theme.ts`). `<Chart theme={…}>` takes a partial override on top of `DEFAULT_CHART_THEME`. Keep the `theme` object referentially stable. `ChartScreen` maps the app's colours into it.
+- #7: `selectDataSet` still has its own line-chart cursor code, because it animates `translation.y`. See #13.
+- #11: also removed the `hidden` option of `formatNumber`, which only used `hiddenValueConstant`.
+
+Open:
+
+- #1: decided on `activePoint` / `ActivePointLabel`, not done yet. The finance wording is already gone (`currentPrice` became `currentPoint`), so this is only about naming. `currentChartIndex` (the selected data set) and `currentPoint` (the point under the cursor) share a prefix but change on different events.
+- #3: number formatting is still fixed at 2 decimals.
+- #13: `selectDataSet` runs the line-chart logic for every chart type. The cursor is left at the right edge instead of the centre of the last step. Not visible today, because the cursor is hidden at rest and the next touch re-snaps.
+- #14: `d3-interpolate-path`, `@types/d3-interpolate-path` and `dayjs` are not imported anywhere in `src/`. Left in `package.json` for now.

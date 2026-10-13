@@ -3,16 +3,17 @@ import { Button, Dimensions, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
-import Chart from './Chart';
-import { dataSetA, dataSetB } from './data';
-import { ChartThemeOverride } from './theme';
 import {
   CandlestickDataPoint,
+  Chart,
   ChartData,
+  ChartThemeOverride,
   ChartType,
   DataPoint,
   DataSet,
-} from './types';
+} from '@/components/Chart';
+
+import { dataSetA, dataSetB } from './data';
 
 const toDataPoints = ({
   data,

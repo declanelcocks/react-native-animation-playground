@@ -1,4 +1,4 @@
-import { CandlestickDataPoint, DataSet } from './types';
+import { CandlestickDataPoint, DataSet } from '@/components/Chart';
 
 interface RawPoint extends Omit<CandlestickDataPoint, 'label'> {
   date: string;
