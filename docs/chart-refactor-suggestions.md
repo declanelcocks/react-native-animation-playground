@@ -38,16 +38,14 @@ Duplication to remove (#7):
 
 ## Status
 
-Done: #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13.
-
-- #3: `<Chart formatValue={…}>` formats both the y-axis labels and the readout. The default is two decimals, grouped by the device's locale. Values are formatted on the JS thread when the charts are built (each point has a `formattedValue`), because the readout reads the active point on the UI thread, where a consumer's formatter couldn't be called. Keep `formatValue` referentially stable, and give longer labels a wider `theme.layout.yAxisWidth`. `round` was unused after this, so it is gone.
+All 14 are done.
 
 - #1: `currentPoint` is now `activePoint` and `CurrentDataPoint` is `ActivePointLabel`. `currentChartIndex` keeps its name; it's the selected data set, not the point under the cursor.
 - #2: colours and sizes come from `ChartTheme` (`theme.ts`). `<Chart theme={…}>` takes a partial override on top of `DEFAULT_CHART_THEME`. Keep the `theme` object referentially stable. `ChartScreen` maps the app's colours into it.
+- #3: `<Chart formatValue={…}>` formats both the y-axis labels and the readout. The default is two decimals, grouped by the device's locale. Values are formatted on the JS thread when the charts are built (each point has a `formattedValue`), because the readout reads the active point on the UI thread, where a consumer's formatter couldn't be called. Keep `formatValue` referentially stable, and give longer labels a wider `theme.layout.yAxisWidth`. `round` was unused after this, so it is gone.
 - #7: `selectDataSet` keeps its own line-chart cursor code, because it animates `translation.y`.
-- #13: after a data set switch, line charts keep that code. Bar and candlestick charts call `moveSteppedCursor`, so the cursor sits at the centre of the last step, like after mount.
 - #11: also removed the `hidden` option of `formatNumber`, which only used `hiddenValueConstant`.
+- #13: after a data set switch, line charts keep that code. Bar and candlestick charts call `moveSteppedCursor`, so the cursor sits at the centre of the last step, like after mount.
+- #14: removed `d3-interpolate-path`, `@types/d3-interpolate-path` and `dayjs`. None were imported anywhere in `src/`, or used by the build config.
 
-Open:
-
-- #14: `d3-interpolate-path`, `@types/d3-interpolate-path` and `dayjs` are not imported anywhere in `src/`. Left in `package.json` for now.
+Also fixed along the way: the bar and candlestick cursor snapped to multiples of the step from the left edge of the chart, not from where the plot starts, so it was off-centre whenever the y-axis label width wasn't a multiple of the step. It now snaps relative to the plot start.
