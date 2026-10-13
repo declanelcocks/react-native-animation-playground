@@ -42,7 +42,6 @@ export function CandlestickChart({
       <YAxisLabels
         charts={charts}
         currentChartIndex={currentChartIndex}
-        height={height}
         labelsPosition={labelsPosition}
         width={width}
       />

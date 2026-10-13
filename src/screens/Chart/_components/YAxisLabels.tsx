@@ -4,7 +4,7 @@ import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
 } from 'react-native-reanimated';
-import Svg, { Line } from 'react-native-svg';
+import { Line } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
@@ -34,21 +34,14 @@ interface LineSlotProps {
 interface Props {
   charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
-  height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
 }
 
 const AnimatedLine = Animated.createAnimatedComponent(Line);
 
-export function YAxisLabels({
-  charts,
-  currentChartIndex,
-  height,
-  labelsPosition,
-  width,
-}: Props) {
-  const allLabels = charts.flatMap((chart, chartIdx) =>
+const getAxisLabels = (charts: BuiltChart[]) =>
+  charts.flatMap((chart, chartIdx) =>
     (chart.yAxisLabels ?? []).map((label, labelIdx) => ({
       ...label,
       chartIdx,
@@ -56,21 +49,19 @@ export function YAxisLabels({
     })),
   );
 
+/**
+ * The y-axis value labels. Render it outside the chart's `Svg`; the grid lines
+ * come from `YAxisLines`, which has to be rendered inside it.
+ */
+export function YAxisLabels({
+  charts,
+  currentChartIndex,
+  labelsPosition,
+  width,
+}: Props) {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Svg height={height + Y_MARGIN * 2} width={width}>
-        {allLabels.map(({ chartIdx, key, y }) => (
-          <LineSlot
-            chartIdx={chartIdx}
-            currentChartIndex={currentChartIndex}
-            key={key}
-            labelsPosition={labelsPosition}
-            width={width}
-            y={y}
-          />
-        ))}
-      </Svg>
-      {allLabels.map(({ chartIdx, key, value, y }) => (
+      {getAxisLabels(charts).map(({ chartIdx, key, value, y }) => (
         <LabelSlot
           chartIdx={chartIdx}
           currentChartIndex={currentChartIndex}
@@ -93,18 +84,10 @@ export function YAxisLines({
   currentChartIndex,
   labelsPosition,
   width,
-}: Omit<Props, 'height'>) {
-  const allLabels = charts.flatMap((chart, chartIdx) =>
-    (chart.yAxisLabels ?? []).map((label, labelIdx) => ({
-      ...label,
-      chartIdx,
-      key: `${chartIdx}-${labelIdx}`,
-    })),
-  );
-
+}: Props) {
   return (
     <>
-      {allLabels.map(({ chartIdx, key, y }) => (
+      {getAxisLabels(charts).map(({ chartIdx, key, y }) => (
         <LineSlot
           chartIdx={chartIdx}
           currentChartIndex={currentChartIndex}

@@ -109,7 +109,6 @@ export function ScrollableBarChart({
       <YAxisLabels
         charts={charts}
         currentChartIndex={currentChartIndex}
-        height={height}
         labelsPosition={labelsPosition}
         width={width}
       />

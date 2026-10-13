@@ -14,7 +14,7 @@ import { useTheme } from '@/theme';
 import { X_MARGIN, Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
 import { BuiltChart } from '../utils';
 import Gradient from './Gradient';
-import YAxisLabels from './YAxisLabels';
+import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -166,11 +166,16 @@ export function LineChart({
 
   return (
     <View style={{ width: width + X_MARGIN }}>
+      <YAxisLabels
+        charts={charts}
+        currentChartIndex={currentChartIndex}
+        labelsPosition={labelsPosition}
+        width={width}
+      />
       <Svg height={height + Y_MARGIN * 2} width={width + X_MARGIN}>
-        <YAxisLabels
+        <YAxisLines
           charts={charts}
           currentChartIndex={currentChartIndex}
-          height={height}
           labelsPosition={labelsPosition}
           width={width}
         />
