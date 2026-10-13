@@ -122,8 +122,9 @@ function ChartContent({
       const step = plotWidth / chart.data.length;
       const endX = leftOffset + plotWidth - step / 2;
 
+      // The steps start at `leftOffset`, so snap relative to it.
       const snappedX = clamp(
-        x - (x % step) + step / 2,
+        leftOffset + Math.floor((x - leftOffset) / step) * step + step / 2,
         leftOffset + step / 2,
         endX,
       );
