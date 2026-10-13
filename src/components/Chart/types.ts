@@ -28,6 +28,7 @@ export type ChartData =
       type: 'line';
     };
 
+/** Turns a value into the text shown on the y-axis and in the readout. */
 export type ChartType = 'bar-scrollable' | 'bar' | 'candlestick' | 'line';
 
 export interface DataPoint {
@@ -39,3 +40,5 @@ export interface DataSet<T> {
   data: T[];
   label: string;
 }
+
+export type FormatValue = (value: number) => string;

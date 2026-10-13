@@ -1,32 +1,4 @@
-const noValueConstant = '-';
-
-const isNumber = (num?: number | string) => {
-  'worklet';
-  return typeof num === 'number' || (typeof num === 'string' && !!num);
-};
-
-export const round = (
-  value?: null | number | string,
-  precision = 0,
-  removeInsignificantZeros?: boolean,
-): string => {
-  'worklet';
-
-  if (value == null || !isNumber(value) || Number.isNaN(Number(value))) {
-    return noValueConstant;
-  }
-
-  const p = Math.pow(10, precision);
-  let result: number | string = (Math.round(Number(value) * p) / p).toFixed(
-    precision,
-  );
-
-  if (removeInsignificantZeros) {
-    result = Number(result);
-  }
-
-  return result.toString().replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',');
-};
+export const noValueConstant = '-';
 
 /**
  * Formats a currency
@@ -60,3 +32,7 @@ export const formatNumber = (
     minimumIntegerDigits,
   }).format(num);
 };
+
+/** The default `formatValue`: two decimals, grouped by the device's locale. */
+export const defaultFormatValue = (value: number) =>
+  formatNumber(value, '1.2-2');

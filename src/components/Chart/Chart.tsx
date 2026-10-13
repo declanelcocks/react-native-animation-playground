@@ -18,13 +18,14 @@ import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import ScrollableBarChart from './_components/ScrollableBarChart';
+import { defaultFormatValue } from './formatters';
 import {
   ChartThemeContext,
   ChartThemeOverride,
   mergeChartTheme,
   useChartTheme,
 } from './theme';
-import { ChartData } from './types';
+import { ChartData, FormatValue } from './types';
 import { buildCharts, ChartPoint } from './utils';
 export type ChartProps = {
   /** Overrides the defaults in `DEFAULT_CHART_THEME`. Keep it referentially stable. */
@@ -32,6 +33,13 @@ export type ChartProps = {
 } & ChartContentProps;
 
 type ChartContentProps = {
+  /**
+   * Formats the values on the y-axis and in the readout. Longer text, such as
+   * with a currency symbol, needs a wider `theme.layout.yAxisWidth`. Keep it
+   * referentially stable (define it outside the component), or the chart is
+   * rebuilt on every render.
+   */
+  formatValue?: FormatValue;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
@@ -49,6 +57,7 @@ function Chart({ theme, ...props }: ChartProps) {
 
 function ChartContent({
   dataSets,
+  formatValue = defaultFormatValue,
   height,
   includeZero,
   labelsPosition,
@@ -76,10 +85,18 @@ function ChartContent({
         // `dataSets`, `includeZero` and `type` come from the same ChartData props, so they
         // still match even though destructuring loses that link for TS.
         { dataSets, includeZero, type } as ChartData,
-        yAxisWidth,
-        labelsPosition,
+        { formatValue, labelsPosition, yAxisWidth },
       ),
-    [dataSets, includeZero, type, height, width, yAxisWidth, labelsPosition],
+    [
+      dataSets,
+      formatValue,
+      includeZero,
+      type,
+      height,
+      width,
+      yAxisWidth,
+      labelsPosition,
+    ],
   );
 
   const translation = useVector() as {

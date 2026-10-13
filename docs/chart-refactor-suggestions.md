@@ -38,7 +38,9 @@ Duplication to remove (#7):
 
 ## Status
 
-Done: #1, #2, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13.
+Done: #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13.
+
+- #3: `<Chart formatValue={…}>` formats both the y-axis labels and the readout. The default is two decimals, grouped by the device's locale. Values are formatted on the JS thread when the charts are built (each point has a `formattedValue`), because the readout reads the active point on the UI thread, where a consumer's formatter couldn't be called. Keep `formatValue` referentially stable, and give longer labels a wider `theme.layout.yAxisWidth`. `round` was unused after this, so it is gone.
 
 - #1: `currentPoint` is now `activePoint` and `CurrentDataPoint` is `ActivePointLabel`. `currentChartIndex` keeps its name; it's the selected data set, not the point under the cursor.
 - #2: colours and sizes come from `ChartTheme` (`theme.ts`). `<Chart theme={…}>` takes a partial override on top of `DEFAULT_CHART_THEME`. Keep the `theme` object referentially stable. `ChartScreen` maps the app's colours into it.
@@ -48,5 +50,4 @@ Done: #1, #2, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13.
 
 Open:
 
-- #3: number formatting is still fixed at 2 decimals.
 - #14: `d3-interpolate-path`, `@types/d3-interpolate-path` and `dayjs` are not imported anywhere in `src/`. Left in `package.json` for now.

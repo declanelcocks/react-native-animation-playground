@@ -3,8 +3,7 @@ import { curveLinear, curveMonotoneX, line } from 'd3-shape';
 import { interpolate } from 'react-native-reanimated';
 import { parse, Path as RedashPath } from 'react-native-redash';
 
-import { formatNumber } from './formatters';
-import { ChartData, ChartType, DataSet } from './types';
+import { ChartData, ChartType, DataSet, FormatValue } from './types';
 
 export interface BuiltChart {
   /** The y position bars grow from. */
@@ -26,6 +25,8 @@ export interface BuiltChart {
  */
 export interface ChartPoint {
   close?: number;
+  /** `value`, formatted with `formatValue` when the chart was built. */
+  formattedValue: string;
   high?: number;
   index: number;
   label?: string;
@@ -39,23 +40,36 @@ export interface YAxisLabel {
   y: number;
 }
 
-const toChartPoints = (points: Omit<ChartPoint, 'index'>[]): ChartPoint[] =>
+// Formatting happens here, on the JS thread, because the readout reads the
+// active point on the UI thread, where `formatValue` couldn't be called.
+const toChartPoints = (
+  points: Omit<ChartPoint, 'formattedValue' | 'index'>[],
+  formatValue: FormatValue,
+): ChartPoint[] =>
   points
     .filter((point) => Number.isFinite(point.value))
-    .map((point, index) => ({ ...point, index }));
+    .map((point, index) => ({
+      ...point,
+      formattedValue: formatValue(point.value),
+      index,
+    }));
 
-const normaliseDataSets = (chartData: ChartData): DataSet<ChartPoint>[] => {
+const normaliseDataSets = (
+  chartData: ChartData,
+  formatValue: FormatValue,
+): DataSet<ChartPoint>[] => {
   if (chartData.type === 'candlestick') {
     return chartData.dataSets.map(({ data, label }) => ({
       data: toChartPoints(
         data.map((point) => ({ ...point, value: point.close })),
+        formatValue,
       ),
       label,
     }));
   }
 
   return chartData.dataSets.map(({ data, label }) => ({
-    data: toChartPoints(data),
+    data: toChartPoints(data, formatValue),
     label,
   }));
 };
@@ -105,6 +119,7 @@ const buildYAxisLabels = (
   min: number,
   max: number,
   height: number,
+  formatValue: FormatValue,
 ): { value: string; y: number }[] => {
   const range = max - min;
   let stepSize = Math.pow(10, Math.floor(Math.log10(range)));
@@ -119,7 +134,7 @@ const buildYAxisLabels = (
   ) {
     const y = height - ((value - min) / range) * height;
     yAxisLabels.push({
-      value: formatNumber(value, '1.2-2'),
+      value: formatValue(value),
       y,
     });
   }
@@ -187,6 +202,7 @@ const buildPathForChart = (
   type: ChartType,
   yAxisWidth: number,
   includeZero: boolean,
+  formatValue: FormatValue,
   labelsPosition?: 'left' | 'right',
 ): {
   baselineY: number;
@@ -208,7 +224,12 @@ const buildPathForChart = (
     );
   };
 
-  const yAxisLabels = buildYAxisLabels(yDomain[0], yDomain[1], size.height);
+  const yAxisLabels = buildYAxisLabels(
+    yDomain[0],
+    yDomain[1],
+    size.height,
+    formatValue,
+  );
 
   const chartPath = buildChartPath(
     size,
@@ -228,6 +249,12 @@ const buildPathForChart = (
   };
 };
 
+export interface BuildChartsOptions {
+  formatValue: FormatValue;
+  labelsPosition?: 'left' | 'right';
+  yAxisWidth: number;
+}
+
 export interface BuildChartsResult {
   mainCharts: BuiltChart[];
 }
@@ -238,12 +265,11 @@ export const buildCharts = (
     width: number;
   },
   chartData: ChartData,
-  yAxisWidth: number,
-  labelsPosition?: 'left' | 'right',
+  { formatValue, labelsPosition, yAxisWidth }: BuildChartsOptions,
 ): BuildChartsResult => {
   const { includeZero = false, type } = chartData;
 
-  const result = normaliseDataSets(chartData).reduce(
+  const result = normaliseDataSets(chartData, formatValue).reduce(
     (acc: BuildChartsResult, dataSet) => {
       const { data, label } = dataSet;
 
@@ -278,6 +304,7 @@ export const buildCharts = (
         type,
         yAxisWidth,
         includeZero,
+        formatValue,
         labelsPosition,
       );
 

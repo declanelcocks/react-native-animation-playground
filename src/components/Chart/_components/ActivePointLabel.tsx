@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { SharedValue, useDerivedValue } from 'react-native-reanimated';
 
-import { round } from '../formatters';
+import { noValueConstant } from '../formatters';
 import { BuiltChart, ChartPoint } from '../utils';
 import Label from './Label';
 
@@ -13,7 +13,7 @@ interface Props {
 
 export function ActivePointLabel({ activePoint, chartIndex, charts }: Props) {
   const value = useDerivedValue(() => {
-    return round(activePoint.get()?.value, 2);
+    return activePoint.get()?.formattedValue ?? noValueConstant;
   });
 
   const dataSetLabel = useDerivedValue(() => {

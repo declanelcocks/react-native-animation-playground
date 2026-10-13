@@ -28,6 +28,14 @@ const valueDataSets = candlestickDataSets.map((dataSet) =>
   toDataPoints(dataSet),
 );
 
+const priceFormatter = new Intl.NumberFormat('en-GB', {
+  currency: 'GBP',
+  style: 'currency',
+});
+
+// Defined outside the component, so its identity is stable.
+const formatPrice = (value: number) => priceFormatter.format(value);
+
 const getChartData = (type: ChartType, includeZero: boolean): ChartData => {
   if (type === 'candlestick') {
     return { dataSets: candlestickDataSets, type };
@@ -44,10 +52,12 @@ export function ChartScreen() {
   const { colors } = useTheme();
   const [type, setType] = useState<ChartType>('candlestick');
   const [includeZero, setIncludeZero] = useState(false);
+  const [useCurrency, setUseCurrency] = useState(false);
 
   // Follow the app's theme, including its dark variant.
   const chartTheme = useMemo<ChartThemeOverride>(
     () => ({
+      // The labels get wider with a currency symbol.
       colors: {
         axisLine: colors.gray400,
         bar: colors.blue500,
@@ -63,8 +73,9 @@ export function ChartScreen() {
         positive: colors.green500,
         positiveActive: colors.green800,
       },
+      layout: useCurrency ? { yAxisWidth: 40 } : {},
     }),
-    [colors],
+    [colors, useCurrency],
   );
   const [labelPosition, setLabelPosition] = useState<'left' | 'right'>('left');
 
@@ -124,6 +135,23 @@ export function ChartScreen() {
           </>
         ) : null}
 
+        <Text>Number format:</Text>
+
+        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+          <Button
+            onPress={() => {
+              setUseCurrency(false);
+            }}
+            title="Default"
+          />
+          <Button
+            onPress={() => {
+              setUseCurrency(true);
+            }}
+            title="£"
+          />
+        </View>
+
         <Text>Label position:</Text>
 
         <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
@@ -144,6 +172,7 @@ export function ChartScreen() {
 
       <Chart
         {...chartData}
+        formatValue={useCurrency ? formatPrice : undefined}
         height={200}
         labelsPosition={labelPosition}
         theme={chartTheme}
