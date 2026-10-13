@@ -9,7 +9,7 @@ import Svg, { Line } from 'react-native-svg';
 import { useTheme } from '@/theme';
 
 import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
-import { Chart } from '../utils';
+import { BuiltChart } from '../utils';
 import { BaseLabel } from './Label';
 
 const LABEL_HEIGHT = 14;
@@ -32,7 +32,7 @@ interface LineSlotProps {
 }
 
 interface Props {
-  charts: Chart[];
+  charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
   height: number;
   labelsPosition?: 'left' | 'right';

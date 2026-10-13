@@ -7,14 +7,14 @@ import { runOnJS } from 'react-native-worklets';
 import { useTheme } from '@/theme';
 
 import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
-import { Chart, ChartPoint } from '../utils';
+import { BuiltChart, ChartPoint } from '../utils';
 import BarChartBar from './BarChartBar';
 import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 interface Props {
   barGap?: number;
   barWidth?: number;
-  charts: Chart[];
+  charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
   currentPoint: SharedValue<ChartPoint | null>;
   height: number;

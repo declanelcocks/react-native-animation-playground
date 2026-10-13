@@ -1,1 +1,3 @@
-export * from './Chart';
+export { default as Chart } from './Chart';
+export type { ChartProps } from './Chart';
+export type * from './types';

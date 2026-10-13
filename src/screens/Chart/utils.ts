@@ -7,7 +7,7 @@ import { Y_AXIS_LABELS_WIDTH } from './constants';
 import { formatNumber } from './formatters';
 import { ChartData, ChartType, DataSet } from './types';
 
-export interface Chart {
+export interface BuiltChart {
   data: ChartPoint[];
   getItemAtX(x: number): ChartPoint;
   label: string;
@@ -192,7 +192,7 @@ const buildPathForChart = (
 };
 
 export interface BuildChartsResult {
-  mainCharts: Chart[];
+  mainCharts: BuiltChart[];
 }
 
 export const buildCharts = (
@@ -209,7 +209,7 @@ export const buildCharts = (
     (acc: BuildChartsResult, dataSet) => {
       const { data, label } = dataSet;
 
-      const emptyMainChart: Chart = {
+      const emptyMainChart: BuiltChart = {
         data: [],
         getItemAtX: () => null as unknown as ChartPoint,
         label,
@@ -248,7 +248,7 @@ export const buildCharts = (
       const trend: 'negative' | 'positive' =
         lastValue >= firstValue ? 'positive' : 'negative';
 
-      const mainChart: Chart = {
+      const mainChart: BuiltChart = {
         label,
         path: parse(chart.rawPath),
         trend,

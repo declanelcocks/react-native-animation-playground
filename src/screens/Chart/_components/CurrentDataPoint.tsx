@@ -2,12 +2,12 @@ import { View } from 'react-native';
 import { SharedValue, useDerivedValue } from 'react-native-reanimated';
 
 import { round } from '../formatters';
-import { Chart, ChartPoint } from '../utils';
+import { BuiltChart, ChartPoint } from '../utils';
 import Label from './Label';
 
 interface Props {
   chartIndex: SharedValue<number>;
-  charts: Chart[];
+  charts: BuiltChart[];
   currentPoint: SharedValue<ChartPoint | null>;
 }
 

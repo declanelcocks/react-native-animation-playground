@@ -12,14 +12,14 @@ import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '@/theme';
 
 import { X_MARGIN, Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
-import { Chart } from '../utils';
+import { BuiltChart } from '../utils';
 import Gradient from './Gradient';
 import YAxisLabels from './YAxisLabels';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 interface Props {
-  charts: Chart[];
+  charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
   currentTrend: Readonly<SharedValue<'negative' | 'positive'>>;
   height: number;

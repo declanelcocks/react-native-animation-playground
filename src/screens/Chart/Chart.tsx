@@ -21,19 +21,13 @@ import ScrollableBarChart from './_components/ScrollableBarChart';
 import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from './constants';
 import { ChartData } from './types';
 import { buildCharts, ChartPoint } from './utils';
-type ChartProps = {
+export type ChartProps = {
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
 } & ChartData;
 
-function Example({
-  dataSets,
-  height,
-  labelsPosition,
-  type,
-  width,
-}: ChartProps) {
+function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
   const transition = useSharedValue(1);
   const isCursorActive = useSharedValue(false);
   const previousChartIndex = useSharedValue(0);
@@ -402,4 +396,4 @@ function Example({
   );
 }
 
-export default Example;
+export default Chart;
