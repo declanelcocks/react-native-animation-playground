@@ -6,9 +6,10 @@ import { runOnJS } from 'react-native-worklets';
 
 import { useTheme } from '@/theme';
 
-import { Chart, ChartPoint, Y_MARGIN } from '../utils';
+import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
+import { Chart, ChartPoint } from '../utils';
 import BarChartBar from './BarChartBar';
-import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
+import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 interface Props {
   barGap?: number;

@@ -6,10 +6,16 @@ import { runOnJS } from 'react-native-worklets';
 
 import { useTheme } from '@/theme';
 
-import { Chart, ChartPoint, X_MARGIN, Y_MARGIN } from '../utils';
+import {
+  CANDLESTICK_MARGIN,
+  MAX_BAR_WIDTH,
+  X_MARGIN,
+  Y_AXIS_LABELS_WIDTH,
+  Y_MARGIN,
+} from '../constants';
+import { Chart, ChartPoint } from '../utils';
 import BarChartBar from './BarChartBar';
-import { CANDLESTICK_MARGIN } from './CandlestickChart';
-import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
+import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 interface Props {
   charts: Chart[];
@@ -68,7 +74,7 @@ export function BarChart({
               barWidth={Math.min(
                 barChartWidth / currentChart.data.length -
                   CANDLESTICK_MARGIN * 2,
-                30,
+                MAX_BAR_WIDTH,
               )}
               calculateBarHeight={(value: number) =>
                 height - currentChart.scaleY(value)

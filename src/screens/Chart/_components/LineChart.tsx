@@ -11,9 +11,10 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
-import { Chart, X_MARGIN, Y_MARGIN } from '../utils';
+import { X_MARGIN, Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
+import { Chart } from '../utils';
 import Gradient from './Gradient';
-import YAxisLabels, { Y_AXIS_LABELS_WIDTH } from './YAxisLabels';
+import YAxisLabels from './YAxisLabels';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 

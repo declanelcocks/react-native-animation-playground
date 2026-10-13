@@ -3,12 +3,9 @@ import { curveLinear, curveMonotoneX, line } from 'd3-shape';
 import { interpolate } from 'react-native-reanimated';
 import { parse, Path as RedashPath } from 'react-native-redash';
 
-import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
+import { Y_AXIS_LABELS_WIDTH } from './constants';
 import { formatNumber } from './formatters';
 import { ChartData, ChartType, DataSet } from './types';
-
-export const X_MARGIN = 32;
-export const Y_MARGIN = 4;
 
 export interface Chart {
   data: ChartPoint[];

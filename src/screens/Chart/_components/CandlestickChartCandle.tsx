@@ -6,7 +6,8 @@ import { Line, Rect } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
-import { ChartPoint, Y_MARGIN } from '../utils';
+import { Y_MARGIN } from '../constants';
+import { ChartPoint } from '../utils';
 
 interface CandlestickChartCandleProps {
   calculateCandleHeight: (size: number) => number;

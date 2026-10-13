@@ -8,13 +8,12 @@ import Svg, { Line } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 
-import { Chart, Y_MARGIN } from '../utils';
+import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
+import { Chart } from '../utils';
 import { BaseLabel } from './Label';
 
 const LABEL_HEIGHT = 14;
 const LABELS_GAP = 4;
-
-export const Y_AXIS_LABELS_WIDTH = 32;
 
 interface LabelSlotProps {
   chartIdx: number;

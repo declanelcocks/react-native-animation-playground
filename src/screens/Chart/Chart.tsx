@@ -18,9 +18,9 @@ import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import ScrollableBarChart from './_components/ScrollableBarChart';
-import { Y_AXIS_LABELS_WIDTH } from './_components/YAxisLabels';
+import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from './constants';
 import { ChartData } from './types';
-import { buildCharts, ChartPoint, Y_MARGIN } from './utils';
+import { buildCharts, ChartPoint } from './utils';
 type ChartProps = {
   height: number;
   labelsPosition?: 'left' | 'right';

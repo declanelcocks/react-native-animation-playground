@@ -4,9 +4,16 @@ import { SharedValue, useAnimatedReaction } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 import { runOnJS } from 'react-native-worklets';
 
-import { Chart, ChartPoint, X_MARGIN, Y_MARGIN } from '../utils';
+import {
+  CANDLESTICK_MARGIN,
+  MAX_BAR_WIDTH,
+  X_MARGIN,
+  Y_AXIS_LABELS_WIDTH,
+  Y_MARGIN,
+} from '../constants';
+import { Chart, ChartPoint } from '../utils';
 import CandlestickChartCandle from './CandlestickChartCandle';
-import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
+import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
 interface Props {
   charts: Chart[];
@@ -16,8 +23,6 @@ interface Props {
   labelsPosition?: 'left' | 'right';
   width: number;
 }
-
-export const CANDLESTICK_MARGIN = 1;
 
 export function CandlestickChart({
   charts,
@@ -71,7 +76,7 @@ export function CandlestickChart({
               candleWidth={Math.min(
                 candlestickChartWidth / currentChart.data.length -
                   CANDLESTICK_MARGIN * 2,
-                30,
+                MAX_BAR_WIDTH,
               )}
               currentPoint={currentPoint}
               data={{ ...d, index: i }}
