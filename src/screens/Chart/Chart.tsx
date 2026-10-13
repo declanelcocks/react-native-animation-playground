@@ -59,46 +59,73 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
 
   const currentPoint = useSharedValue<ChartPoint | null>(null);
 
+  const plotWidth = width - Y_AXIS_LABELS_WIDTH;
+
+  // Moves the cursor along the line to `x`, and reads the point under it.
+  const moveLineCursor = useCallback(
+    (x: number) => {
+      'worklet';
+
+      const chart = charts[currentChartIndex.get()];
+
+      translation.x.set(x);
+      translation.y.set((getYForX(chart.path, x) ?? 0) + Y_MARGIN);
+      currentPoint.set(chart.getItemAtX(x));
+    },
+    [charts, currentChartIndex, currentPoint, translation.x, translation.y],
+  );
+
+  // Snaps the cursor to the centre of the step under `x` (or the last step, if
+  // `x` is past it). `y` is only applied when given.
+  const moveSteppedCursor = useCallback(
+    (x: number, y?: number) => {
+      'worklet';
+
+      const chart = charts[currentChartIndex.get()];
+      const step = plotWidth / chart.data.length;
+      const endX = leftOffset + plotWidth - step / 2;
+
+      const snappedX = clamp(
+        x - (x % step) + step / 2,
+        leftOffset + step / 2,
+        endX,
+      );
+      const dataPointIndex = Math.floor((snappedX - leftOffset) / step);
+
+      translation.x.set(snappedX);
+      if (y !== undefined) {
+        translation.y.set(clamp(y, 0, height) || 0);
+      }
+      currentPoint.set({
+        ...chart.data[dataPointIndex],
+        index: dataPointIndex,
+      });
+    },
+    [
+      charts,
+      currentChartIndex,
+      currentPoint,
+      height,
+      leftOffset,
+      plotWidth,
+      translation.x,
+      translation.y,
+    ],
+  );
+
   useEffect(() => {
     if (type === 'line') {
-      translation.x.set(lineChartEndX);
-      translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) +
-          Y_MARGIN,
-      );
-      currentPoint.set(
-        charts[currentChartIndex.get()].getItemAtX(lineChartEndX),
-      );
+      moveLineCursor(lineChartEndX);
     } else {
-      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
-      const step =
-        candlestickChartWidth / charts[currentChartIndex.get()].data.length;
-      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
-
-      const xVal = clamp(
-        candlestickEndX,
-        leftOffset + step / 2,
-        candlestickEndX,
-      );
-
-      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
-
-      const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
-
-      translation.x.set(xVal);
-      translation.y.set(0);
-      currentPoint.set({ ...dataPoint, index: dataPointIndex });
+      moveSteppedCursor(leftOffset + plotWidth, 0);
     }
   }, [
-    charts,
-    currentChartIndex,
-    currentPoint,
     leftOffset,
     lineChartEndX,
-    translation.x,
-    translation.y,
+    moveLineCursor,
+    moveSteppedCursor,
+    plotWidth,
     type,
-    width,
   ]);
 
   const chartDisplayProps = useAnimatedStyle(() => {
@@ -123,37 +150,16 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
     .onBegin(({ x }) => {
       if (x < 0) return;
       isCursorActive.set(true);
-      translation.x.set(clamp(x, leftOffset, lineChartEndX));
-      translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
-          0) + Y_MARGIN,
-      );
-      currentPoint.set(
-        charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
-      );
+      moveLineCursor(clamp(x, leftOffset, lineChartEndX));
     })
     .onUpdate(({ x }) => {
       if (x < 0) return;
       isCursorActive.set(true);
-      translation.x.set(clamp(x, leftOffset, lineChartEndX));
-      translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
-          0) + Y_MARGIN,
-      );
-      currentPoint.set(
-        charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
-      );
+      moveLineCursor(clamp(x, leftOffset, lineChartEndX));
     })
     .onFinalize(() => {
       isCursorActive.set(false);
-      translation.x.set(lineChartEndX);
-      translation.y.set(
-        (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) +
-          Y_MARGIN,
-      );
-      currentPoint.set(
-        charts[currentChartIndex.get()].getItemAtX(lineChartEndX),
-      );
+      moveLineCursor(lineChartEndX);
     });
 
   const onClampedGestureEvent = Gesture.Pan()
@@ -162,70 +168,17 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
     .minDistance(0)
     .onBegin(({ x, y }) => {
       if (x < 0) return;
-      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
-      const step =
-        candlestickChartWidth / charts[currentChartIndex.value].data.length;
-      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
-
       isCursorActive.set(true);
-
-      const xVal = clamp(
-        x - (x % step) + step / 2,
-        leftOffset + step / 2,
-        candlestickEndX,
-      );
-
-      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
-
-      const dataPoint = charts[currentChartIndex.value].data[dataPointIndex];
-
-      translation.x.set(xVal);
-      translation.y.set(clamp(y, 0, height) || 0);
-      currentPoint.set({ ...dataPoint, index: dataPointIndex });
+      moveSteppedCursor(x, y);
     })
     .onUpdate(({ x, y }) => {
       if (x < 0) return;
-      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
-      const step =
-        candlestickChartWidth / charts[currentChartIndex.value].data.length;
-      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
-
       isCursorActive.set(true);
-
-      const xVal = clamp(
-        x - (x % step) + step / 2,
-        leftOffset + step / 2,
-        candlestickEndX,
-      );
-
-      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
-
-      const dataPoint = charts[currentChartIndex.value].data[dataPointIndex];
-
-      translation.x.set(xVal);
-      translation.y.set(clamp(y, 0, height) || 0);
-      currentPoint.set({ ...dataPoint, index: dataPointIndex });
+      moveSteppedCursor(x, y);
     })
     .onFinalize(() => {
-      const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
-      const step =
-        candlestickChartWidth / charts[currentChartIndex.get()].data.length;
-      const candlestickEndX = leftOffset + candlestickChartWidth - step / 2;
-
       isCursorActive.set(false);
-
-      const xVal = clamp(
-        candlestickEndX,
-        leftOffset + step / 2,
-        candlestickEndX,
-      );
-
-      const dataPointIndex = Math.floor((xVal - leftOffset) / step);
-
-      const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
-
-      translation.x.set(xVal);
-      currentPoint.set({ ...dataPoint, index: dataPointIndex });
+      moveSteppedCursor(leftOffset + plotWidth);
     });
 
   const selectDataSet = useCallback(
