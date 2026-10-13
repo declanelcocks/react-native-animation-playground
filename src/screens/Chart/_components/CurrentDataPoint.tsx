@@ -8,12 +8,12 @@ import Label from './Label';
 interface Props {
   chartIndex: SharedValue<number>;
   charts: Chart[];
-  currentPrice: SharedValue<ChartPoint | null>;
+  currentPoint: SharedValue<ChartPoint | null>;
 }
 
-export function CurrentPriceData({ chartIndex, charts, currentPrice }: Props) {
-  const lastPrice = useDerivedValue(() => {
-    return round(currentPrice.get()?.value, 2);
+export function CurrentDataPoint({ chartIndex, charts, currentPoint }: Props) {
+  const value = useDerivedValue(() => {
+    return round(currentPoint.get()?.value, 2);
   });
 
   const dataSetLabel = useDerivedValue(() => {
@@ -21,16 +21,16 @@ export function CurrentPriceData({ chartIndex, charts, currentPrice }: Props) {
   });
 
   const pointLabel = useDerivedValue(() => {
-    return currentPrice.get()?.label ?? '';
+    return currentPoint.get()?.label ?? '';
   });
 
   return (
     <View style={{ alignItems: 'center' }}>
-      <Label text={lastPrice} />
+      <Label text={value} />
       <Label text={dataSetLabel} />
       <Label text={pointLabel} />
     </View>
   );
 }
 
-export default CurrentPriceData;
+export default CurrentDataPoint;

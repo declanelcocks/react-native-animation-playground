@@ -13,7 +13,7 @@ interface BarChartBarProps {
   calculateBarHeight: (size: number) => number;
   calculateYValue: (value: number) => number;
   chartHeight: number;
-  currentPrice: SharedValue<ChartPoint | null>;
+  currentPoint: SharedValue<ChartPoint | null>;
   data: ChartPoint;
   leftOffset: number;
   onPress?: () => void;
@@ -27,7 +27,7 @@ export function BarChartBar({
   calculateBarHeight,
   calculateYValue,
   chartHeight,
-  currentPrice,
+  currentPoint,
   data,
   leftOffset,
   onPress,
@@ -40,7 +40,7 @@ export function BarChartBar({
   const barHeight = calculateBarHeight(value);
 
   const animatedRectProps = useAnimatedProps(() => {
-    const isActive = index === currentPrice.get()?.index;
+    const isActive = index === currentPoint.get()?.index;
     return { fill: isActive ? theme.colors.blue800 : theme.colors.blue500 };
   });
 

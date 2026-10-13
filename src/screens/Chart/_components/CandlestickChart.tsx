@@ -11,7 +11,7 @@ import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
 interface Props {
   charts: Chart[];
   currentChartIndex: SharedValue<number>;
-  currentPrice: SharedValue<ChartPoint | null>;
+  currentPoint: SharedValue<ChartPoint | null>;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
@@ -23,7 +23,7 @@ export function CandlestickChart({
   charts,
   children,
   currentChartIndex,
-  currentPrice,
+  currentPoint,
   height,
   labelsPosition,
   width,
@@ -73,7 +73,7 @@ export function CandlestickChart({
                   CANDLESTICK_MARGIN * 2,
                 30,
               )}
-              currentPrice={currentPrice}
+              currentPoint={currentPoint}
               data={{ ...d, index: i }}
               key={i}
               leftOffset={leftOffset}

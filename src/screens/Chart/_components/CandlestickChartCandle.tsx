@@ -12,7 +12,7 @@ interface CandlestickChartCandleProps {
   calculateCandleHeight: (size: number) => number;
   calculateYValue: (value: number) => number;
   candleWidth: number;
-  currentPrice: SharedValue<ChartPoint | null>;
+  currentPoint: SharedValue<ChartPoint | null>;
   data: ChartPoint;
   leftOffset: number;
   step: number;
@@ -25,7 +25,7 @@ export function CandlestickChartCandle({
   calculateCandleHeight,
   calculateYValue,
   candleWidth,
-  currentPrice,
+  currentPoint,
   data,
   leftOffset,
   step,
@@ -40,7 +40,7 @@ export function CandlestickChartCandle({
   const candleHeight = calculateCandleHeight(max - min);
 
   const animatedLineProps = useAnimatedProps(() => {
-    const isActive = index === currentPrice.get()?.index;
+    const isActive = index === currentPoint.get()?.index;
 
     const bgColor =
       !close || !open
@@ -59,7 +59,7 @@ export function CandlestickChartCandle({
   });
 
   const animatedRectProps = useAnimatedProps(() => {
-    const isActive = index === currentPrice.get()?.index;
+    const isActive = index === currentPoint.get()?.index;
 
     const bgColor =
       !close || !open

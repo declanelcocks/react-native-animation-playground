@@ -14,7 +14,7 @@ import YAxisLabels, { Y_AXIS_LABELS_WIDTH, YAxisLines } from './YAxisLabels';
 interface Props {
   charts: Chart[];
   currentChartIndex: SharedValue<number>;
-  currentPrice: SharedValue<ChartPoint | null>;
+  currentPoint: SharedValue<ChartPoint | null>;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
@@ -24,7 +24,7 @@ export function BarChart({
   charts,
   children,
   currentChartIndex,
-  currentPrice,
+  currentPoint,
   height,
   labelsPosition,
   width,
@@ -75,7 +75,7 @@ export function BarChart({
               }
               calculateYValue={(value: number) => currentChart.scaleY(value)}
               chartHeight={height}
-              currentPrice={currentPrice}
+              currentPoint={currentPoint}
               data={{ ...d, index: i }}
               key={i}
               leftOffset={leftOffset}

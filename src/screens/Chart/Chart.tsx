@@ -13,7 +13,7 @@ import { clamp, getYForX, useVector } from 'react-native-redash';
 import BarChart from './_components/BarChart';
 import CandlestickChart from './_components/CandlestickChart';
 import CandlestickChartCursor from './_components/CandlestickChartCursor';
-import CurrentPriceData from './_components/CurrentPriceData';
+import CurrentDataPoint from './_components/CurrentDataPoint';
 import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
@@ -60,7 +60,7 @@ function Example({
     y: SharedValue<number>;
   };
 
-  const currentPrice = useSharedValue<ChartPoint | null>(null);
+  const currentPoint = useSharedValue<ChartPoint | null>(null);
 
   useEffect(() => {
     if (type === 'line') {
@@ -69,7 +69,7 @@ function Example({
         (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) +
           Y_MARGIN,
       );
-      currentPrice.set(
+      currentPoint.set(
         charts[currentChartIndex.get()].getItemAtX(lineChartEndX),
       );
     } else {
@@ -90,12 +90,12 @@ function Example({
 
       translation.x.set(xVal);
       translation.y.set(0);
-      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+      currentPoint.set({ ...dataPoint, index: dataPointIndex });
     }
   }, [
     charts,
     currentChartIndex,
-    currentPrice,
+    currentPoint,
     leftOffset,
     lineChartEndX,
     translation.x,
@@ -131,7 +131,7 @@ function Example({
         (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
           0) + Y_MARGIN,
       );
-      currentPrice.set(
+      currentPoint.set(
         charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
       );
     })
@@ -143,7 +143,7 @@ function Example({
         (getYForX(charts[currentChartIndex.get()].path, translation.x.get()) ??
           0) + Y_MARGIN,
       );
-      currentPrice.set(
+      currentPoint.set(
         charts[currentChartIndex.get()].getItemAtX(translation.x.get()),
       );
     })
@@ -154,7 +154,7 @@ function Example({
         (getYForX(charts[currentChartIndex.get()].path, lineChartEndX) ?? 0) +
           Y_MARGIN,
       );
-      currentPrice.set(
+      currentPoint.set(
         charts[currentChartIndex.get()].getItemAtX(lineChartEndX),
       );
     });
@@ -184,7 +184,7 @@ function Example({
 
       translation.x.set(xVal);
       translation.y.set(clamp(y, 0, height) || 0);
-      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+      currentPoint.set({ ...dataPoint, index: dataPointIndex });
     })
     .onUpdate(({ x, y }) => {
       if (x < 0) return;
@@ -207,7 +207,7 @@ function Example({
 
       translation.x.set(xVal);
       translation.y.set(clamp(y, 0, height) || 0);
-      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+      currentPoint.set({ ...dataPoint, index: dataPointIndex });
     })
     .onFinalize(() => {
       const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
@@ -228,7 +228,7 @@ function Example({
       const dataPoint = charts[currentChartIndex.get()].data[dataPointIndex];
 
       translation.x.set(xVal);
-      currentPrice.set({ ...dataPoint, index: dataPointIndex });
+      currentPoint.set({ ...dataPoint, index: dataPointIndex });
     });
 
   const selectDataSet = useCallback(
@@ -261,12 +261,12 @@ function Example({
           ),
         );
 
-        currentPrice.set(charts[index].getItemAtX(lineChartEndX));
+        currentPoint.set(charts[index].getItemAtX(lineChartEndX));
       } else {
         translation.x.set(lineChartEndX);
         translation.y.set(0);
 
-        currentPrice.set(null);
+        currentPoint.set(null);
       }
     },
     [
@@ -277,17 +277,17 @@ function Example({
       translation.x,
       translation.y,
       lineChartEndX,
-      currentPrice,
+      currentPoint,
     ],
   );
 
   return (
     <View style={{ padding: 16 }}>
       <View style={{ marginBottom: 16 }}>
-        <CurrentPriceData
+        <CurrentDataPoint
           chartIndex={currentChartIndex}
           charts={charts}
-          currentPrice={currentPrice}
+          currentPoint={currentPoint}
         />
       </View>
 
@@ -297,7 +297,7 @@ function Example({
             <CandlestickChart
               charts={charts}
               currentChartIndex={currentChartIndex}
-              currentPrice={currentPrice}
+              currentPoint={currentPoint}
               height={height}
               labelsPosition={labelsPosition}
               width={width}
@@ -323,7 +323,7 @@ function Example({
             <BarChart
               charts={charts}
               currentChartIndex={currentChartIndex}
-              currentPrice={currentPrice}
+              currentPoint={currentPoint}
               height={height}
               labelsPosition={labelsPosition}
               width={width}
@@ -348,7 +348,7 @@ function Example({
           <ScrollableBarChart
             charts={charts}
             currentChartIndex={currentChartIndex}
-            currentPrice={currentPrice}
+            currentPoint={currentPoint}
             height={height}
             labelsPosition={labelsPosition}
             width={width}

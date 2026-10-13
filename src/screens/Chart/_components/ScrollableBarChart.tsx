@@ -15,7 +15,7 @@ interface Props {
   barWidth?: number;
   charts: Chart[];
   currentChartIndex: SharedValue<number>;
-  currentPrice: SharedValue<ChartPoint | null>;
+  currentPoint: SharedValue<ChartPoint | null>;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
@@ -26,7 +26,7 @@ export function ScrollableBarChart({
   barWidth = 32,
   charts,
   currentChartIndex,
-  currentPrice,
+  currentPoint,
   height,
   labelsPosition,
   width,
@@ -93,11 +93,7 @@ export function ScrollableBarChart({
           { left: leftOffset, right: rightOffset, zIndex: 2 },
         ]}
       >
-        <ScrollView
-          horizontal
-          ref={scrollRef}
-          showsHorizontalScrollIndicator={false}
-        >
+        <ScrollView decelerationRate="fast" horizontal ref={scrollRef}>
           <Svg height={height + Y_MARGIN * 2} width={totalBarsWidth}>
             {currentChart.data.map((d, i) => (
               <BarChartBar
@@ -107,12 +103,12 @@ export function ScrollableBarChart({
                 }
                 calculateYValue={(value: number) => currentChart.scaleY(value)}
                 chartHeight={height}
-                currentPrice={currentPrice}
+                currentPoint={currentPoint}
                 data={{ ...d, index: i }}
                 key={i}
                 leftOffset={0}
                 onPress={() => {
-                  currentPrice.set({ ...d, index: i });
+                  currentPoint.set({ ...d, index: i });
                 }}
                 step={step}
               />
