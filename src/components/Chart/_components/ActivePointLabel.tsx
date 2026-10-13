@@ -6,14 +6,14 @@ import { BuiltChart, ChartPoint } from '../utils';
 import Label from './Label';
 
 interface Props {
+  activePoint: SharedValue<ChartPoint | null>;
   chartIndex: SharedValue<number>;
   charts: BuiltChart[];
-  currentPoint: SharedValue<ChartPoint | null>;
 }
 
-export function CurrentDataPoint({ chartIndex, charts, currentPoint }: Props) {
+export function ActivePointLabel({ activePoint, chartIndex, charts }: Props) {
   const value = useDerivedValue(() => {
-    return round(currentPoint.get()?.value, 2);
+    return round(activePoint.get()?.value, 2);
   });
 
   const dataSetLabel = useDerivedValue(() => {
@@ -21,7 +21,7 @@ export function CurrentDataPoint({ chartIndex, charts, currentPoint }: Props) {
   });
 
   const pointLabel = useDerivedValue(() => {
-    return currentPoint.get()?.label ?? '';
+    return activePoint.get()?.label ?? '';
   });
 
   return (
@@ -33,4 +33,4 @@ export function CurrentDataPoint({ chartIndex, charts, currentPoint }: Props) {
   );
 }
 
-export default CurrentDataPoint;
+export default ActivePointLabel;

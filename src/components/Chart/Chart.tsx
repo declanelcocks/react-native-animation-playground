@@ -10,10 +10,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { clamp, getYForX, useVector } from 'react-native-redash';
 
+import ActivePointLabel from './_components/ActivePointLabel';
 import BarChart from './_components/BarChart';
 import CandlestickChart from './_components/CandlestickChart';
 import CrosshairCursor from './_components/CrosshairCursor';
-import CurrentDataPoint from './_components/CurrentDataPoint';
 import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
@@ -87,7 +87,7 @@ function ChartContent({
     y: SharedValue<number>;
   };
 
-  const currentPoint = useSharedValue<ChartPoint | null>(null);
+  const activePoint = useSharedValue<ChartPoint | null>(null);
 
   const plotWidth = width - yAxisWidth;
 
@@ -100,12 +100,12 @@ function ChartContent({
 
       translation.x.set(x);
       translation.y.set((getYForX(chart.path, x) ?? 0) + yMargin);
-      currentPoint.set(chart.getItemAtX(x));
+      activePoint.set(chart.getItemAtX(x));
     },
     [
       charts,
       currentChartIndex,
-      currentPoint,
+      activePoint,
       translation.x,
       translation.y,
       yMargin,
@@ -133,7 +133,7 @@ function ChartContent({
       if (y !== undefined) {
         translation.y.set(clamp(y, 0, height) || 0);
       }
-      currentPoint.set({
+      activePoint.set({
         ...chart.data[dataPointIndex],
         index: dataPointIndex,
       });
@@ -141,7 +141,7 @@ function ChartContent({
     [
       charts,
       currentChartIndex,
-      currentPoint,
+      activePoint,
       height,
       leftOffset,
       plotWidth,
@@ -249,12 +249,12 @@ function ChartContent({
           ),
         );
 
-        currentPoint.set(charts[index].getItemAtX(lineChartEndX));
+        activePoint.set(charts[index].getItemAtX(lineChartEndX));
       } else {
         translation.x.set(lineChartEndX);
         translation.y.set(0);
 
-        currentPoint.set(null);
+        activePoint.set(null);
       }
     },
     [
@@ -266,7 +266,7 @@ function ChartContent({
       translation.x,
       translation.y,
       lineChartEndX,
-      currentPoint,
+      activePoint,
       animation.transitionDuration,
       yMargin,
     ],
@@ -275,10 +275,10 @@ function ChartContent({
   return (
     <View style={{ padding: 16 }}>
       <View style={{ marginBottom: 16 }}>
-        <CurrentDataPoint
+        <ActivePointLabel
+          activePoint={activePoint}
           chartIndex={currentChartIndex}
           charts={charts}
-          currentPoint={currentPoint}
         />
       </View>
 
@@ -286,10 +286,10 @@ function ChartContent({
         {type === 'candlestick' && (
           <View>
             <CandlestickChart
+              activePoint={activePoint}
               chart={charts[chartIndex]}
               charts={charts}
               currentChartIndex={currentChartIndex}
-              currentPoint={currentPoint}
               height={height}
               labelsPosition={labelsPosition}
               width={width}
@@ -313,10 +313,10 @@ function ChartContent({
         {type === 'bar' && (
           <View>
             <BarChart
+              activePoint={activePoint}
               chart={charts[chartIndex]}
               charts={charts}
               currentChartIndex={currentChartIndex}
-              currentPoint={currentPoint}
               height={height}
               labelsPosition={labelsPosition}
               width={width}
@@ -339,10 +339,10 @@ function ChartContent({
 
         {type === 'bar-scrollable' && (
           <ScrollableBarChart
+            activePoint={activePoint}
             chart={charts[chartIndex]}
             charts={charts}
             currentChartIndex={currentChartIndex}
-            currentPoint={currentPoint}
             height={height}
             labelsPosition={labelsPosition}
             width={width}

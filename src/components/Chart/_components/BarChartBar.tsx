@@ -8,11 +8,11 @@ import { useChartTheme } from '../theme';
 import { ChartPoint } from '../utils';
 
 interface BarChartBarProps {
+  activePoint: SharedValue<ChartPoint | null>;
   barWidth: number;
   baselineY: number;
   calculateYValue: (value: number) => number;
   chartHeight: number;
-  currentPoint: SharedValue<ChartPoint | null>;
   data: ChartPoint;
   leftOffset: number;
   onPress?: () => void;
@@ -22,11 +22,11 @@ interface BarChartBarProps {
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 export function BarChartBar({
+  activePoint,
   barWidth,
   baselineY,
   calculateYValue,
   chartHeight,
-  currentPoint,
   data,
   leftOffset,
   onPress,
@@ -42,7 +42,7 @@ export function BarChartBar({
   const barHeight = Math.abs(valueY - baselineY);
 
   const animatedRectProps = useAnimatedProps(() => {
-    const isActive = index === currentPoint.get()?.index;
+    const isActive = index === activePoint.get()?.index;
     return { fill: isActive ? theme.colors.barActive : theme.colors.bar };
   });
 

@@ -8,10 +8,10 @@ import { useChartTheme } from '../theme';
 import { ChartPoint } from '../utils';
 
 interface CandlestickChartCandleProps {
+  activePoint: SharedValue<ChartPoint | null>;
   calculateCandleHeight: (size: number) => number;
   calculateYValue: (value: number) => number;
   candleWidth: number;
-  currentPoint: SharedValue<ChartPoint | null>;
   data: ChartPoint;
   leftOffset: number;
   step: number;
@@ -21,10 +21,10 @@ const AnimatedLine = Animated.createAnimatedComponent(Line);
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 export function CandlestickChartCandle({
+  activePoint,
   calculateCandleHeight,
   calculateYValue,
   candleWidth,
-  currentPoint,
   data,
   leftOffset,
   step,
@@ -51,14 +51,14 @@ export function CandlestickChartCandle({
     return isActive ? theme.colors.negativeActive : theme.colors.negative;
   };
 
-  // `currentPoint` is read here rather than in `getCandleColor`, so the props
+  // `activePoint` is read here rather than in `getCandleColor`, so the props
   // update when it changes.
   const animatedLineProps = useAnimatedProps(() => ({
-    stroke: getCandleColor(index === currentPoint.get()?.index),
+    stroke: getCandleColor(index === activePoint.get()?.index),
   }));
 
   const animatedRectProps = useAnimatedProps(() => ({
-    fill: getCandleColor(index === currentPoint.get()?.index),
+    fill: getCandleColor(index === activePoint.get()?.index),
   }));
 
   return (

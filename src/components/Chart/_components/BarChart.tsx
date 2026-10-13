@@ -8,21 +8,21 @@ import BarChartBar from './BarChartBar';
 import SteppedChartFrame from './SteppedChartFrame';
 
 interface Props {
+  activePoint: SharedValue<ChartPoint | null>;
   chart: BuiltChart;
   charts: BuiltChart[];
   currentChartIndex: SharedValue<number>;
-  currentPoint: SharedValue<ChartPoint | null>;
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
 }
 
 export function BarChart({
+  activePoint,
   chart,
   charts,
   children,
   currentChartIndex,
-  currentPoint,
   height,
   labelsPosition,
   width,
@@ -43,6 +43,7 @@ export function BarChart({
           {chart.data.map((d, i) => {
             return (
               <BarChartBar
+                activePoint={activePoint}
                 barWidth={Math.min(
                   barChartWidth / chart.data.length - barMargin * 2,
                   maxBarWidth,
@@ -50,7 +51,6 @@ export function BarChart({
                 baselineY={chart.baselineY}
                 calculateYValue={(value: number) => chart.scaleY(value)}
                 chartHeight={height}
-                currentPoint={currentPoint}
                 data={{ ...d, index: i }}
                 key={i}
                 leftOffset={leftOffset}
