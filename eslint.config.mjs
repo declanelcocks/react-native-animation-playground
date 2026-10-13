@@ -169,6 +169,6 @@ export default defineConfig(
     },
   },
   {
-    ignores: ['plugins/**'],
+    ignores: ['plugins/**', '.yarn/**'],
   },
 );
