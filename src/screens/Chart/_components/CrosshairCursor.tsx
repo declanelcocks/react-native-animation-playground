@@ -15,7 +15,7 @@ interface Props {
   width: number;
 }
 
-export function CandlestickChartCursor({
+export function CrosshairCursor({
   height,
   isCursorActive,
   translation,
@@ -82,4 +82,4 @@ export function CandlestickChartCursor({
   );
 }
 
-export default CandlestickChartCursor;
+export default CrosshairCursor;

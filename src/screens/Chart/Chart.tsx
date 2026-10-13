@@ -12,7 +12,7 @@ import { clamp, getYForX, useVector } from 'react-native-redash';
 
 import BarChart from './_components/BarChart';
 import CandlestickChart from './_components/CandlestickChart';
-import CandlestickChartCursor from './_components/CandlestickChartCursor';
+import CrosshairCursor from './_components/CrosshairCursor';
 import CurrentDataPoint from './_components/CurrentDataPoint';
 import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
@@ -296,7 +296,7 @@ function ChartContent({
               <View style={StyleSheet.absoluteFill}>
                 <GestureDetector gesture={onClampedGestureEvent}>
                   <Animated.View style={StyleSheet.absoluteFill}>
-                    <CandlestickChartCursor
+                    <CrosshairCursor
                       height={height}
                       isCursorActive={isCursorActive}
                       translation={translation}
@@ -323,7 +323,7 @@ function ChartContent({
               <View style={StyleSheet.absoluteFill}>
                 <GestureDetector gesture={onClampedGestureEvent}>
                   <Animated.View style={StyleSheet.absoluteFill}>
-                    <CandlestickChartCursor
+                    <CrosshairCursor
                       height={height}
                       isCursorActive={isCursorActive}
                       translation={translation}

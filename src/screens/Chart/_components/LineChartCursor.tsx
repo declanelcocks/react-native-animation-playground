@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
+  useDerivedValue,
 } from 'react-native-reanimated';
 import { Vector } from 'react-native-redash';
 
@@ -24,15 +25,19 @@ export function LineChartCursor({
 }: Props) {
   const theme = useChartTheme();
   const { cursorSize } = theme.layout;
+
+  const trendColor = useDerivedValue(() =>
+    currentTrend.get() === 'positive'
+      ? theme.colors.positive
+      : theme.colors.negative,
+  );
+
   const cursorStyle = useAnimatedStyle(() => {
     const translateX = translation.x.get() - cursorSize / 2;
     const translateY = translation.y.get() - cursorSize / 2;
 
     return {
-      backgroundColor:
-        currentTrend.get() === 'positive'
-          ? theme.colors.positive
-          : theme.colors.negative,
+      backgroundColor: trendColor.get(),
       opacity: 1,
       transform: [{ translateX }, { translateY }],
     };
@@ -43,10 +48,7 @@ export function LineChartCursor({
       const translateX = translation.x.get();
 
       return {
-        backgroundColor:
-          currentTrend.get() === 'positive'
-            ? theme.colors.positive
-            : theme.colors.negative,
+        backgroundColor: trendColor.get(),
         opacity: 1,
         transform: [{ translateX }],
       };
@@ -63,10 +65,7 @@ export function LineChartCursor({
       const translateY = translation.y.get();
 
       return {
-        backgroundColor:
-          currentTrend.get() === 'positive'
-            ? theme.colors.positive
-            : theme.colors.negative,
+        backgroundColor: trendColor.get(),
         opacity: 1,
         transform: [{ translateY }],
       };
