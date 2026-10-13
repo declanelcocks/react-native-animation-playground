@@ -235,21 +235,25 @@ function ChartContent({
       );
 
       if (charts[index]?.data?.length) {
-        translation.x.set(lineChartEndX);
+        if (type === 'line') {
+          translation.x.set(lineChartEndX);
 
-        translation.y.set(
-          withTiming(
-            (getYForX(
-              charts[currentChartIndex.get()].path,
-              translation.x.get(),
-            ) ?? 0) + yMargin,
-            {
-              duration: animation.transitionDuration,
-            },
-          ),
-        );
+          translation.y.set(
+            withTiming(
+              (getYForX(
+                charts[currentChartIndex.get()].path,
+                translation.x.get(),
+              ) ?? 0) + yMargin,
+              {
+                duration: animation.transitionDuration,
+              },
+            ),
+          );
 
-        activePoint.set(charts[index].getItemAtX(lineChartEndX));
+          activePoint.set(charts[index].getItemAtX(lineChartEndX));
+        } else {
+          moveSteppedCursor(leftOffset + plotWidth, 0);
+        }
       } else {
         translation.x.set(lineChartEndX);
         translation.y.set(0);
@@ -269,6 +273,10 @@ function ChartContent({
       activePoint,
       animation.transitionDuration,
       yMargin,
+      type,
+      leftOffset,
+      plotWidth,
+      moveSteppedCursor,
     ],
   );
 

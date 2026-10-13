@@ -38,15 +38,15 @@ Duplication to remove (#7):
 
 ## Status
 
-Done: #1, #2, #4, #5, #6, #7, #8, #9, #10, #11, #12.
+Done: #1, #2, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13.
 
 - #1: `currentPoint` is now `activePoint` and `CurrentDataPoint` is `ActivePointLabel`. `currentChartIndex` keeps its name; it's the selected data set, not the point under the cursor.
 - #2: colours and sizes come from `ChartTheme` (`theme.ts`). `<Chart theme={…}>` takes a partial override on top of `DEFAULT_CHART_THEME`. Keep the `theme` object referentially stable. `ChartScreen` maps the app's colours into it.
-- #7: `selectDataSet` still has its own line-chart cursor code, because it animates `translation.y`. See #13.
+- #7: `selectDataSet` keeps its own line-chart cursor code, because it animates `translation.y`.
+- #13: after a data set switch, line charts keep that code. Bar and candlestick charts call `moveSteppedCursor`, so the cursor sits at the centre of the last step, like after mount.
 - #11: also removed the `hidden` option of `formatNumber`, which only used `hiddenValueConstant`.
 
 Open:
 
 - #3: number formatting is still fixed at 2 decimals.
-- #13: `selectDataSet` runs the line-chart logic for every chart type. The cursor is left at the right edge instead of the centre of the last step. Not visible today, because the cursor is hidden at rest and the next touch re-snaps.
 - #14: `d3-interpolate-path`, `@types/d3-interpolate-path` and `dayjs` are not imported anywhere in `src/`. Left in `package.json` for now.
