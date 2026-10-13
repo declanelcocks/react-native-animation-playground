@@ -40,43 +40,27 @@ export function CandlestickChartCandle({
 
   const candleHeight = calculateCandleHeight(max - min);
 
-  const animatedLineProps = useAnimatedProps(() => {
-    const isActive = index === currentPoint.get()?.index;
+  const getCandleColor = (isActive: boolean) => {
+    'worklet';
 
-    const bgColor =
-      !close || !open
-        ? isActive
-          ? theme.colors.green800
-          : theme.colors.green500
-        : close >= open
-          ? isActive
-            ? theme.colors.green800
-            : theme.colors.green500
-          : isActive
-            ? theme.colors.red800
-            : theme.colors.red500;
+    const isPositive = !close || !open || close >= open;
 
-    return { stroke: bgColor };
-  });
+    if (isPositive) {
+      return isActive ? theme.colors.green800 : theme.colors.green500;
+    }
 
-  const animatedRectProps = useAnimatedProps(() => {
-    const isActive = index === currentPoint.get()?.index;
+    return isActive ? theme.colors.red800 : theme.colors.red500;
+  };
 
-    const bgColor =
-      !close || !open
-        ? isActive
-          ? theme.colors.green800
-          : theme.colors.green500
-        : close >= open
-          ? isActive
-            ? theme.colors.green800
-            : theme.colors.green500
-          : isActive
-            ? theme.colors.red800
-            : theme.colors.red500;
+  // `currentPoint` is read here rather than in `getCandleColor`, so the props
+  // update when it changes.
+  const animatedLineProps = useAnimatedProps(() => ({
+    stroke: getCandleColor(index === currentPoint.get()?.index),
+  }));
 
-    return { fill: bgColor };
-  });
+  const animatedRectProps = useAnimatedProps(() => ({
+    fill: getCandleColor(index === currentPoint.get()?.index),
+  }));
 
   return (
     <>
