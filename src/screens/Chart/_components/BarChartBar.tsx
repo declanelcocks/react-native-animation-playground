@@ -4,9 +4,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Rect } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
-
-import { Y_MARGIN } from '../constants';
+import { useChartTheme } from '../theme';
 import { ChartPoint } from '../utils';
 
 interface BarChartBarProps {
@@ -34,7 +32,8 @@ export function BarChartBar({
   onPress,
   step,
 }: BarChartBarProps) {
-  const theme = useTheme();
+  const theme = useChartTheme();
+  const { yMargin } = theme.layout;
 
   const { index, value } = data;
   const x = index * step;
@@ -42,7 +41,7 @@ export function BarChartBar({
 
   const animatedRectProps = useAnimatedProps(() => {
     const isActive = index === currentPoint.get()?.index;
-    return { fill: isActive ? theme.colors.blue800 : theme.colors.blue500 };
+    return { fill: isActive ? theme.colors.barActive : theme.colors.bar };
   });
 
   return (
@@ -51,7 +50,7 @@ export function BarChartBar({
         fill="transparent"
         height={chartHeight}
         onPress={onPress}
-        transform={[{ translateY: Y_MARGIN }, { translateX: x + leftOffset }]}
+        transform={[{ translateY: yMargin }, { translateX: x + leftOffset }]}
         width={step}
       />
       <AnimatedRect
@@ -59,7 +58,7 @@ export function BarChartBar({
         height={Math.max(barHeight, 2)}
         onPress={onPress}
         transform={[
-          { translateY: Y_MARGIN + calculateYValue(value) },
+          { translateY: yMargin + calculateYValue(value) },
           { translateX: x + step / 2 - barWidth / 2 + leftOffset },
         ]}
         width={barWidth}

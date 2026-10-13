@@ -10,9 +10,7 @@ import Animated, {
 import { interpolatePath } from 'react-native-redash';
 import Svg, { Path } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
-
-import { X_MARGIN, Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
+import { useChartTheme } from '../theme';
 import { BuiltChart } from '../utils';
 import Gradient from './Gradient';
 import YAxisLabels, { YAxisLines } from './YAxisLabels';
@@ -43,14 +41,15 @@ export function LineChart({
   transition,
   width,
 }: PropsWithChildren<Props>) {
-  const theme = useTheme();
+  const theme = useChartTheme();
+  const { xMargin, yAxisWidth, yMargin } = theme.layout;
   // Gradient IDs are global to the page, so each chart needs its own. React's
   // IDs contain `:`, which isn't valid inside `url(#...)`.
   const gradientId = useId().replaceAll(':', '');
   const positiveGradientId = `${gradientId}-positive`;
   const negativeGradientId = `${gradientId}-negative`;
-  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
+  const leftOffset = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const rightOffset = labelsPosition === 'right' ? yAxisWidth : 0;
 
   // The path morphing between the previous and the current data set. Empty when
   // there's nothing to draw.
@@ -85,7 +84,7 @@ export function LineChart({
     if (!d) {
       return {
         d: '',
-        stroke: theme.colors.green500,
+        stroke: theme.colors.positive,
       };
     }
 
@@ -96,11 +95,11 @@ export function LineChart({
         [0, 1],
         [
           previousChart.trend === 'positive'
-            ? theme.colors.green500
-            : theme.colors.red500,
+            ? theme.colors.positive
+            : theme.colors.negative,
           currentChart.trend === 'positive'
-            ? theme.colors.green500
-            : theme.colors.red500,
+            ? theme.colors.positive
+            : theme.colors.negative,
         ],
       ),
     };
@@ -157,14 +156,14 @@ export function LineChart({
   });
 
   return (
-    <View style={{ width: width + X_MARGIN }}>
+    <View style={{ width: width + xMargin }}>
       <YAxisLabels
         charts={charts}
         currentChartIndex={currentChartIndex}
         labelsPosition={labelsPosition}
         width={width}
       />
-      <Svg height={height + Y_MARGIN * 2} width={width + X_MARGIN}>
+      <Svg height={height + yMargin * 2} width={width + xMargin}>
         <YAxisLines
           charts={charts}
           currentChartIndex={currentChartIndex}
@@ -175,32 +174,32 @@ export function LineChart({
         <Gradient
           id={positiveGradientId}
           trend="positive"
-          {...{ translateY: Y_MARGIN }}
+          {...{ translateY: yMargin }}
         />
 
         <Gradient
           id={negativeGradientId}
           trend="negative"
-          {...{ translateY: Y_MARGIN }}
+          {...{ translateY: yMargin }}
         />
 
         <AnimatedPath
           animatedProps={animatedProps}
           fill="transparent"
           strokeWidth={2}
-          transform={[{ translateY: Y_MARGIN }]}
+          transform={[{ translateY: yMargin }]}
         />
 
         <AnimatedPath
           animatedProps={animatedNegativeGradientProps}
           fill={`url(#${negativeGradientId})`}
-          transform={[{ translateY: Y_MARGIN }]}
+          transform={[{ translateY: yMargin }]}
         />
 
         <AnimatedPath
           animatedProps={animatedPositiveGradientProps}
           fill={`url(#${positiveGradientId})`}
-          transform={[{ translateY: Y_MARGIN }]}
+          transform={[{ translateY: yMargin }]}
         />
       </Svg>
 

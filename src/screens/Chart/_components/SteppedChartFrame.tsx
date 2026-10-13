@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 
-import { X_MARGIN, Y_MARGIN } from '../constants';
+import { useChartTheme } from '../theme';
 import { BuiltChart } from '../utils';
 import YAxisLabels, { YAxisLines } from './YAxisLabels';
 
@@ -31,15 +31,16 @@ export function SteppedChartFrame({
   plot,
   width,
 }: PropsWithChildren<Props>) {
+  const { xMargin, yMargin } = useChartTheme().layout;
   return (
-    <View style={{ width: width + X_MARGIN }}>
+    <View style={{ width: width + xMargin }}>
       <YAxisLabels
         charts={charts}
         currentChartIndex={currentChartIndex}
         labelsPosition={labelsPosition}
         width={width}
       />
-      <Svg height={height + Y_MARGIN * 2} width={width + X_MARGIN}>
+      <Svg height={height + yMargin * 2} width={width + xMargin}>
         <YAxisLines
           charts={charts}
           currentChartIndex={currentChartIndex}

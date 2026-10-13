@@ -4,9 +4,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Line, Rect } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
-
-import { Y_MARGIN } from '../constants';
+import { useChartTheme } from '../theme';
 import { ChartPoint } from '../utils';
 
 interface CandlestickChartCandleProps {
@@ -31,7 +29,8 @@ export function CandlestickChartCandle({
   leftOffset,
   step,
 }: CandlestickChartCandleProps) {
-  const theme = useTheme();
+  const theme = useChartTheme();
+  const { yMargin } = theme.layout;
 
   const { close, high, index, low, open } = data;
   const x = index * step;
@@ -46,10 +45,10 @@ export function CandlestickChartCandle({
     const isPositive = !close || !open || close >= open;
 
     if (isPositive) {
-      return isActive ? theme.colors.green800 : theme.colors.green500;
+      return isActive ? theme.colors.positiveActive : theme.colors.positive;
     }
 
-    return isActive ? theme.colors.red800 : theme.colors.red500;
+    return isActive ? theme.colors.negativeActive : theme.colors.negative;
   };
 
   // `currentPoint` is read here rather than in `getCandleColor`, so the props
@@ -67,7 +66,7 @@ export function CandlestickChartCandle({
       <AnimatedLine
         animatedProps={animatedLineProps}
         strokeWidth={2}
-        transform={[{ translateY: Y_MARGIN }, { translateX: leftOffset }]}
+        transform={[{ translateY: yMargin }, { translateX: leftOffset }]}
         x1={x + step / 2}
         x2={x + step / 2}
         y1={calculateYValue(low ?? 0)}
@@ -79,7 +78,7 @@ export function CandlestickChartCandle({
         height={Math.max(candleHeight, 2)}
         transform={[
           {
-            translateY: Y_MARGIN + calculateYValue(max),
+            translateY: yMargin + calculateYValue(max),
           },
           {
             translateX: x + step / 2 - candleWidth / 2 + leftOffset,

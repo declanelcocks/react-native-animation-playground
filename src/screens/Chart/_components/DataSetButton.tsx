@@ -5,8 +5,7 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 
-import { useTheme } from '@/theme';
-
+import { useChartTheme } from '../theme';
 import { BaseLabel } from './Label';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -26,7 +25,7 @@ export function DataSetButton({
   onSelect,
   transition,
 }: Props) {
-  const theme = useTheme();
+  const theme = useChartTheme();
 
   const buttonStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
@@ -34,11 +33,11 @@ export function DataSetButton({
       [0, 1],
       [
         currentChartIndex.get() === index
-          ? theme.colors.gray200
-          : theme.colors.purple500,
+          ? theme.colors.buttonInactive
+          : theme.colors.buttonActive,
         currentChartIndex.get() === index
-          ? theme.colors.purple500
-          : theme.colors.gray200,
+          ? theme.colors.buttonActive
+          : theme.colors.buttonInactive,
       ],
     ),
   }));
@@ -49,11 +48,11 @@ export function DataSetButton({
       [0, 1],
       [
         currentChartIndex.get() === index
-          ? theme.colors.gray400
-          : theme.colors.white,
+          ? theme.colors.buttonTextInactive
+          : theme.colors.buttonTextActive,
         currentChartIndex.get() === index
-          ? theme.colors.white
-          : theme.colors.gray400,
+          ? theme.colors.buttonTextActive
+          : theme.colors.buttonTextInactive,
       ],
     ),
   }));

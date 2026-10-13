@@ -6,9 +6,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Line } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
-
-import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
+import { useChartTheme } from '../theme';
 import { BuiltChart } from '../utils';
 import { BaseLabel } from './Label';
 
@@ -59,6 +57,8 @@ export function YAxisLabels({
   labelsPosition,
   width,
 }: Props) {
+  const { yAxisWidth } = useChartTheme().layout;
+
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {getAxisLabels(charts).map(({ chartIdx, key, value, y }) => (
@@ -67,9 +67,7 @@ export function YAxisLabels({
           currentChartIndex={currentChartIndex}
           key={key}
           labelLeft={
-            labelsPosition === 'right'
-              ? width - Y_AXIS_LABELS_WIDTH + LABELS_GAP
-              : 0
+            labelsPosition === 'right' ? width - yAxisWidth + LABELS_GAP : 0
           }
           value={value}
           y={y}
@@ -108,17 +106,19 @@ function LabelSlot({
   value,
   y,
 }: LabelSlotProps) {
+  const { axisLabelFontSize, yAxisWidth, yMargin } = useChartTheme().layout;
+
   const style = useAnimatedStyle(() => ({
     left: labelLeft,
     opacity: currentChartIndex.value === chartIdx ? 1 : 0,
     position: 'absolute',
-    top: y + Y_MARGIN - LABEL_HEIGHT / 2,
-    width: Y_AXIS_LABELS_WIDTH,
+    top: y + yMargin - LABEL_HEIGHT / 2,
+    width: yAxisWidth,
   }));
 
   return (
     <Animated.View style={style}>
-      <BaseLabel style={{ fontSize: 9 }} text={value} />
+      <BaseLabel style={{ fontSize: axisLabelFontSize }} text={value} />
     </Animated.View>
   );
 }
@@ -130,21 +130,22 @@ function LineSlot({
   width,
   y,
 }: LineSlotProps) {
-  const theme = useTheme();
+  const theme = useChartTheme();
+  const { yAxisWidth, yMargin } = theme.layout;
 
   const animatedProps = useAnimatedProps(() => ({
     opacity: currentChartIndex.value === chartIdx ? 1 : 0,
   }));
 
-  const x1 = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const x2 = labelsPosition === 'right' ? width - Y_AXIS_LABELS_WIDTH : width;
+  const x1 = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const x2 = labelsPosition === 'right' ? width - yAxisWidth : width;
 
   return (
     <AnimatedLine
       animatedProps={animatedProps}
-      stroke={theme.colors.gray400}
+      stroke={theme.colors.gridLine}
       strokeDasharray={4}
-      transform={[{ translateY: Y_MARGIN }]}
+      transform={[{ translateY: yMargin }]}
       x1={x1}
       x2={x2}
       y1={y}

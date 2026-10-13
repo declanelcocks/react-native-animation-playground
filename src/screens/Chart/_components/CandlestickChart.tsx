@@ -1,11 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { SharedValue } from 'react-native-reanimated';
 
-import {
-  CANDLESTICK_MARGIN,
-  MAX_BAR_WIDTH,
-  Y_AXIS_LABELS_WIDTH,
-} from '../constants';
+import { useChartTheme } from '../theme';
 import { BuiltChart, ChartPoint } from '../utils';
 import CandlestickChartCandle from './CandlestickChartCandle';
 import SteppedChartFrame from './SteppedChartFrame';
@@ -30,8 +26,9 @@ export function CandlestickChart({
   labelsPosition,
   width,
 }: PropsWithChildren<Props>) {
-  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const candlestickChartWidth = width - Y_AXIS_LABELS_WIDTH;
+  const { barMargin, maxBarWidth, yAxisWidth } = useChartTheme().layout;
+  const leftOffset = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const candlestickChartWidth = width - yAxisWidth;
 
   return (
     <SteppedChartFrame
@@ -45,9 +42,8 @@ export function CandlestickChart({
             calculateCandleHeight={(size: number) => chart.scaleBody(size)}
             calculateYValue={(value: number) => chart.scaleY(value)}
             candleWidth={Math.min(
-              candlestickChartWidth / chart.data.length -
-                CANDLESTICK_MARGIN * 2,
-              MAX_BAR_WIDTH,
+              candlestickChartWidth / chart.data.length - barMargin * 2,
+              maxBarWidth,
             )}
             currentPoint={currentPoint}
             data={{ ...d, index: i }}

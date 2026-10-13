@@ -3,7 +3,6 @@ import { curveLinear, curveMonotoneX, line } from 'd3-shape';
 import { interpolate } from 'react-native-reanimated';
 import { parse, Path as RedashPath } from 'react-native-redash';
 
-import { Y_AXIS_LABELS_WIDTH } from './constants';
 import { formatNumber } from './formatters';
 import { ChartData, ChartType, DataSet } from './types';
 
@@ -109,6 +108,7 @@ const buildChartPath = (
   items: ChartPoint[],
   yDomain: [number, number],
   type: ChartType,
+  yAxisWidth: number,
   smooth?: boolean,
   labelsPosition?: 'left' | 'right',
 ): {
@@ -117,11 +117,11 @@ const buildChartPath = (
   rawPath: string;
   scaleY: ScaleLinear<number, number>;
 } => {
-  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
+  const leftOffset = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const rightOffset = labelsPosition === 'right' ? yAxisWidth : 0;
   const xScaleDomain = items.map((p) => p.index.toString());
   let xScaleRange;
-  const effectiveWidth = size.width - Y_AXIS_LABELS_WIDTH;
+  const effectiveWidth = size.width - yAxisWidth;
 
   if (type === 'candlestick') {
     const step = effectiveWidth / items.length;
@@ -162,6 +162,7 @@ const buildPathForChart = (
   items: ChartPoint[],
   yDomain: [number, number],
   type: ChartType,
+  yAxisWidth: number,
   labelsPosition?: 'left' | 'right',
 ): {
   data: ChartPoint[];
@@ -185,7 +186,15 @@ const buildPathForChart = (
   const yAxisLabels = buildYAxisLabels(yDomain[0], yDomain[1], size.height);
 
   return {
-    ...buildChartPath(size, items, yDomain, type, undefined, labelsPosition),
+    ...buildChartPath(
+      size,
+      items,
+      yDomain,
+      type,
+      yAxisWidth,
+      undefined,
+      labelsPosition,
+    ),
     scaleBody,
     yAxisLabels,
   };
@@ -201,6 +210,7 @@ export const buildCharts = (
     width: number;
   },
   chartData: ChartData,
+  yAxisWidth: number,
   labelsPosition?: 'left' | 'right',
 ): BuildChartsResult => {
   const { type } = chartData;
@@ -235,6 +245,7 @@ export const buildCharts = (
         data,
         yDomain,
         type,
+        yAxisWidth,
         labelsPosition,
       );
 

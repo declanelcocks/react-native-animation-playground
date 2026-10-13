@@ -5,24 +5,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Vector } from 'react-native-redash';
 
-import { useTheme } from '@/theme';
-
-const CURSOR_SIZE = 12;
-
-const styles = StyleSheet.create({
-  cursor: {
-    alignItems: 'center',
-    borderRadius: CURSOR_SIZE / 2,
-    height: CURSOR_SIZE,
-    justifyContent: 'center',
-    width: CURSOR_SIZE,
-  },
-  cursorBody: {
-    borderRadius: CURSOR_SIZE / 2,
-    height: CURSOR_SIZE,
-    width: CURSOR_SIZE,
-  },
-});
+import { useChartTheme } from '../theme';
 
 interface Props {
   currentTrend: Readonly<SharedValue<'negative' | 'positive'>>;
@@ -39,16 +22,17 @@ export function LineChartCursor({
   translation,
   width,
 }: Props) {
-  const theme = useTheme();
+  const theme = useChartTheme();
+  const { cursorSize } = theme.layout;
   const cursorStyle = useAnimatedStyle(() => {
-    const translateX = translation.x.get() - CURSOR_SIZE / 2;
-    const translateY = translation.y.get() - CURSOR_SIZE / 2;
+    const translateX = translation.x.get() - cursorSize / 2;
+    const translateY = translation.y.get() - cursorSize / 2;
 
     return {
       backgroundColor:
         currentTrend.get() === 'positive'
-          ? theme.colors.green500
-          : theme.colors.red500,
+          ? theme.colors.positive
+          : theme.colors.negative,
       opacity: 1,
       transform: [{ translateX }, { translateY }],
     };
@@ -61,8 +45,8 @@ export function LineChartCursor({
       return {
         backgroundColor:
           currentTrend.get() === 'positive'
-            ? theme.colors.green500
-            : theme.colors.red500,
+            ? theme.colors.positive
+            : theme.colors.negative,
         opacity: 1,
         transform: [{ translateX }],
       };
@@ -81,8 +65,8 @@ export function LineChartCursor({
       return {
         backgroundColor:
           currentTrend.get() === 'positive'
-            ? theme.colors.green500
-            : theme.colors.red500,
+            ? theme.colors.positive
+            : theme.colors.negative,
         opacity: 1,
         transform: [{ translateY }],
       };
@@ -96,7 +80,18 @@ export function LineChartCursor({
 
   return (
     <>
-      <Animated.View style={[styles.cursor, cursorStyle]} />
+      <Animated.View
+        style={[
+          {
+            alignItems: 'center',
+            borderRadius: cursorSize / 2,
+            height: cursorSize,
+            justifyContent: 'center',
+            width: cursorSize,
+          },
+          cursorStyle,
+        ]}
+      />
 
       <View style={StyleSheet.absoluteFill}>
         <Animated.View

@@ -1,6 +1,6 @@
 import { Defs, LinearGradient, Stop } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
+import { useChartTheme } from '../theme';
 
 interface Props {
   /** Referenced from `fill="url(#id)"`; must be unique within the page. */
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function Gradient({ id, trend }: Props) {
-  const theme = useTheme();
+  const theme = useChartTheme();
 
   return (
     <Defs>
@@ -17,21 +17,21 @@ export function Gradient({ id, trend }: Props) {
         <Stop
           offset="0%"
           stopColor={
-            trend === 'positive' ? theme.colors.green500 : theme.colors.red500
+            trend === 'positive' ? theme.colors.positive : theme.colors.negative
           }
           stopOpacity="0.6"
         />
         <Stop
           offset="50%"
           stopColor={
-            trend === 'positive' ? theme.colors.green500 : theme.colors.red500
+            trend === 'positive' ? theme.colors.positive : theme.colors.negative
           }
           stopOpacity="0.3"
         />
         <Stop
           offset="100%"
           stopColor={
-            trend === 'positive' ? theme.colors.green500 : theme.colors.red500
+            trend === 'positive' ? theme.colors.positive : theme.colors.negative
           }
           stopOpacity="0"
         />

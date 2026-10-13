@@ -18,16 +18,44 @@ import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import ScrollableBarChart from './_components/ScrollableBarChart';
-import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from './constants';
+import {
+  ChartThemeContext,
+  ChartThemeOverride,
+  mergeChartTheme,
+  useChartTheme,
+} from './theme';
 import { ChartData } from './types';
 import { buildCharts, ChartPoint } from './utils';
 export type ChartProps = {
+  /** Overrides the defaults in `DEFAULT_CHART_THEME`. Keep it referentially stable. */
+  theme?: ChartThemeOverride;
+} & ChartContentProps;
+
+type ChartContentProps = {
   height: number;
   labelsPosition?: 'left' | 'right';
   width: number;
 } & ChartData;
 
-function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
+function Chart({ theme, ...props }: ChartProps) {
+  const mergedTheme = useMemo(() => mergeChartTheme(theme), [theme]);
+
+  return (
+    <ChartThemeContext.Provider value={mergedTheme}>
+      <ChartContent {...props} />
+    </ChartThemeContext.Provider>
+  );
+}
+
+function ChartContent({
+  dataSets,
+  height,
+  labelsPosition,
+  type,
+  width,
+}: ChartContentProps) {
+  const { animation, layout } = useChartTheme();
+  const { yAxisWidth, yMargin } = layout;
   const transition = useSharedValue(1);
   const isCursorActive = useSharedValue(false);
   const previousChartIndex = useSharedValue(0);
@@ -36,8 +64,8 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
   // re-render with the selected data set.
   const [chartIndex, setChartIndex] = useState(0);
 
-  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
+  const leftOffset = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const rightOffset = labelsPosition === 'right' ? yAxisWidth : 0;
   const lineChartEndX = width - rightOffset;
 
   const { mainCharts: charts } = useMemo(
@@ -47,9 +75,10 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
         // `dataSets` and `type` come from the same ChartData props, so they
         // still match even though destructuring loses that link for TS.
         { dataSets, type } as ChartData,
+        yAxisWidth,
         labelsPosition,
       ),
-    [dataSets, type, height, width, labelsPosition],
+    [dataSets, type, height, width, yAxisWidth, labelsPosition],
   );
 
   const translation = useVector() as {
@@ -59,7 +88,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
 
   const currentPoint = useSharedValue<ChartPoint | null>(null);
 
-  const plotWidth = width - Y_AXIS_LABELS_WIDTH;
+  const plotWidth = width - yAxisWidth;
 
   // Moves the cursor along the line to `x`, and reads the point under it.
   const moveLineCursor = useCallback(
@@ -69,10 +98,17 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
       const chart = charts[currentChartIndex.get()];
 
       translation.x.set(x);
-      translation.y.set((getYForX(chart.path, x) ?? 0) + Y_MARGIN);
+      translation.y.set((getYForX(chart.path, x) ?? 0) + yMargin);
       currentPoint.set(chart.getItemAtX(x));
     },
-    [charts, currentChartIndex, currentPoint, translation.x, translation.y],
+    [
+      charts,
+      currentChartIndex,
+      currentPoint,
+      translation.x,
+      translation.y,
+      yMargin,
+    ],
   );
 
   // Snaps the cursor to the centre of the step under `x` (or the last step, if
@@ -193,7 +229,7 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
       transition.set(0);
       transition.set(
         withTiming(1, {
-          duration: 150,
+          duration: animation.transitionDuration,
         }),
       );
 
@@ -205,9 +241,9 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
             (getYForX(
               charts[currentChartIndex.get()].path,
               translation.x.get(),
-            ) ?? 0) + Y_MARGIN,
+            ) ?? 0) + yMargin,
             {
-              duration: 150,
+              duration: animation.transitionDuration,
             },
           ),
         );
@@ -230,6 +266,8 @@ function Chart({ dataSets, height, labelsPosition, type, width }: ChartProps) {
       translation.y,
       lineChartEndX,
       currentPoint,
+      animation.transitionDuration,
+      yMargin,
     ],
   );
 

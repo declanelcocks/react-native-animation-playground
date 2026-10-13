@@ -2,14 +2,7 @@ import { PropsWithChildren } from 'react';
 import { SharedValue } from 'react-native-reanimated';
 import { Line } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
-
-import {
-  CANDLESTICK_MARGIN,
-  MAX_BAR_WIDTH,
-  Y_AXIS_LABELS_WIDTH,
-  Y_MARGIN,
-} from '../constants';
+import { useChartTheme } from '../theme';
 import { BuiltChart, ChartPoint } from '../utils';
 import BarChartBar from './BarChartBar';
 import SteppedChartFrame from './SteppedChartFrame';
@@ -34,9 +27,10 @@ export function BarChart({
   labelsPosition,
   width,
 }: PropsWithChildren<Props>) {
-  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const theme = useTheme();
-  const barChartWidth = width - Y_AXIS_LABELS_WIDTH;
+  const theme = useChartTheme();
+  const { barMargin, maxBarWidth, yAxisWidth, yMargin } = theme.layout;
+  const leftOffset = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const barChartWidth = width - yAxisWidth;
 
   return (
     <SteppedChartFrame
@@ -50,8 +44,8 @@ export function BarChart({
             return (
               <BarChartBar
                 barWidth={Math.min(
-                  barChartWidth / chart.data.length - CANDLESTICK_MARGIN * 2,
-                  MAX_BAR_WIDTH,
+                  barChartWidth / chart.data.length - barMargin * 2,
+                  maxBarWidth,
                 )}
                 calculateBarHeight={(value: number) =>
                   height - chart.scaleY(value)
@@ -68,9 +62,9 @@ export function BarChart({
           })}
 
           <Line
-            stroke={theme.colors.gray400}
+            stroke={theme.colors.axisLine}
             strokeWidth={1}
-            transform={[{ translateY: Y_MARGIN }]}
+            transform={[{ translateY: yMargin }]}
             x1={leftOffset}
             x2={leftOffset + barChartWidth}
             y1={height}

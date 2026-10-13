@@ -6,7 +6,7 @@ import Animated, {
 import { Vector } from 'react-native-redash';
 import Svg, { Line } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
+import { useChartTheme } from '../theme';
 
 interface Props {
   height: number;
@@ -21,7 +21,7 @@ export function CandlestickChartCursor({
   translation,
   width,
 }: Props) {
-  const theme = useTheme();
+  const theme = useChartTheme();
 
   const horizontal = useAnimatedStyle(() => {
     if (isCursorActive.get()) {
@@ -54,7 +54,7 @@ export function CandlestickChartCursor({
       <Animated.View style={[StyleSheet.absoluteFill, horizontal]}>
         <Svg style={StyleSheet.absoluteFill}>
           <Line
-            stroke={theme.colors.gray800}
+            stroke={theme.colors.crosshair}
             strokeDasharray="3 3"
             strokeWidth={2}
             x1={0}
@@ -68,7 +68,7 @@ export function CandlestickChartCursor({
       <Animated.View style={[StyleSheet.absoluteFill, vertical]}>
         <Svg style={StyleSheet.absoluteFill}>
           <Line
-            stroke={theme.colors.gray800}
+            stroke={theme.colors.crosshair}
             strokeDasharray="3 3"
             strokeWidth={2}
             x1={0}

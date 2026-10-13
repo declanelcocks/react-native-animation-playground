@@ -3,9 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
-
-import { Y_AXIS_LABELS_WIDTH, Y_MARGIN } from '../constants';
+import { useChartTheme } from '../theme';
 import { BuiltChart, ChartPoint } from '../utils';
 import BarChartBar from './BarChartBar';
 import YAxisLabels, { YAxisLines } from './YAxisLabels';
@@ -33,11 +31,12 @@ export function ScrollableBarChart({
   labelsPosition,
   width,
 }: Props) {
-  const theme = useTheme();
+  const theme = useChartTheme();
+  const { yAxisWidth, yMargin } = theme.layout;
   const scrollRef = useRef<ScrollView>(null);
 
-  const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
-  const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
+  const leftOffset = labelsPosition === 'right' ? 0 : yAxisWidth;
+  const rightOffset = labelsPosition === 'right' ? yAxisWidth : 0;
 
   const step = barWidth + barGap;
 
@@ -48,13 +47,13 @@ export function ScrollableBarChart({
   const totalBarsWidth = chart.data.length * step;
 
   return (
-    <View style={{ height: height + Y_MARGIN * 2, width }}>
+    <View style={{ height: height + yMargin * 2, width }}>
       {/* Sticky Y-axis reference lines */}
       <View
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
       >
-        <Svg height={height + Y_MARGIN * 2} width={width}>
+        <Svg height={height + yMargin * 2} width={width}>
           <YAxisLines
             charts={charts}
             currentChartIndex={currentChartIndex}
@@ -63,9 +62,9 @@ export function ScrollableBarChart({
           />
 
           <Line
-            stroke={theme.colors.gray400}
+            stroke={theme.colors.axisLine}
             strokeWidth={1}
-            transform={[{ translateY: Y_MARGIN }]}
+            transform={[{ translateY: yMargin }]}
             x1={leftOffset}
             x2={width - rightOffset}
             y1={height}
@@ -82,7 +81,7 @@ export function ScrollableBarChart({
         ]}
       >
         <ScrollView decelerationRate="fast" horizontal ref={scrollRef}>
-          <Svg height={height + Y_MARGIN * 2} width={totalBarsWidth}>
+          <Svg height={height + yMargin * 2} width={totalBarsWidth}>
             {chart.data.map((d, i) => (
               <BarChartBar
                 barWidth={barWidth}
