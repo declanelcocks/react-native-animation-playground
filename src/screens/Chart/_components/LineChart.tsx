@@ -5,6 +5,7 @@ import Animated, {
   interpolateColor,
   SharedValue,
   useAnimatedProps,
+  useDerivedValue,
 } from 'react-native-reanimated';
 import { interpolatePath } from 'react-native-redash';
 import Svg, { Path } from 'react-native-svg';
@@ -46,20 +47,19 @@ export function LineChart({
   const leftOffset = labelsPosition === 'right' ? 0 : Y_AXIS_LABELS_WIDTH;
   const rightOffset = labelsPosition === 'right' ? Y_AXIS_LABELS_WIDTH : 0;
 
-  const animatedProps = useAnimatedProps(() => {
+  // The path morphing between the previous and the current data set. Empty when
+  // there's nothing to draw.
+  const interpolatedPath = useDerivedValue(() => {
     const previousChart = charts[previousChartIndex.get()];
     const currentChart = charts[currentChartIndex.get()];
 
     // When 1 datapoint and rerender before mockpoint, interpolatePath() breaks
     // TODO: find a better workaround
     if (!currentChart.rawPath || currentChart.rawPath.endsWith('Z')) {
-      return {
-        d: '',
-        stroke: theme.colors.green500,
-      };
+      return '';
     }
 
-    const d = interpolatePath(
+    return interpolatePath(
       transition.get(),
       [0, 1],
       [
@@ -70,6 +70,19 @@ export function LineChart({
         currentChart.path,
       ],
     );
+  });
+
+  const animatedProps = useAnimatedProps(() => {
+    const previousChart = charts[previousChartIndex.get()];
+    const currentChart = charts[currentChartIndex.get()];
+    const d = interpolatedPath.get();
+
+    if (!d) {
+      return {
+        d: '',
+        stroke: theme.colors.green500,
+      };
+    }
 
     return {
       d,
@@ -89,27 +102,14 @@ export function LineChart({
   });
 
   const animatedPositiveGradientProps = useAnimatedProps(() => {
-    const previousChart = charts[previousChartIndex.get()];
-    const currentChart = charts[currentChartIndex.get()];
+    const d = interpolatedPath.get();
 
-    if (!currentChart.rawPath || currentChart.rawPath.endsWith('Z')) {
+    if (!d) {
       return {
         d: '',
         opacity: 1,
       };
     }
-
-    const d = interpolatePath(
-      transition.get(),
-      [0, 1],
-      [
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        !previousChart.path && currentChart.path
-          ? currentChart.path
-          : previousChart.path,
-        currentChart.path,
-      ],
-    );
 
     const opacity =
       currentTrend.get() === 'positive'
@@ -127,27 +127,14 @@ export function LineChart({
   });
 
   const animatedNegativeGradientProps = useAnimatedProps(() => {
-    const previousChart = charts[previousChartIndex.get()];
-    const currentChart = charts[currentChartIndex.get()];
+    const d = interpolatedPath.get();
 
-    if (!currentChart.rawPath || currentChart.rawPath.endsWith('Z')) {
+    if (!d) {
       return {
         d: '',
         opacity: 1,
       };
     }
-
-    const d = interpolatePath(
-      transition.get(),
-      [0, 1],
-      [
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        !previousChart.path && currentChart.path
-          ? currentChart.path
-          : previousChart.path,
-        currentChart.path,
-      ],
-    );
 
     const opacity =
       currentTrend.get() === 'negative'
