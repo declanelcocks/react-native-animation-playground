@@ -18,15 +18,15 @@ import DataSetButton from './_components/DataSetButton';
 import LineChart from './_components/LineChart';
 import LineChartCursor from './_components/LineChartCursor';
 import ScrollableBarChart from './_components/ScrollableBarChart';
-import { defaultFormatValue } from './formatters';
+import { buildCharts, ChartPoint } from './utils/buildCharts';
+import { defaultFormatValue } from './utils/formatters';
 import {
   ChartThemeContext,
   ChartThemeOverride,
   mergeChartTheme,
   useChartTheme,
-} from './theme';
-import { ChartData, FormatValue } from './types';
-import { buildCharts, ChartPoint } from './utils';
+} from './utils/theme';
+import { ChartData, FormatValue } from './utils/types';
 export type ChartProps = {
   /** Overrides the defaults in `DEFAULT_CHART_THEME`. Keep it referentially stable. */
   theme?: ChartThemeOverride;
@@ -199,6 +199,7 @@ function ChartContent({
   );
 
   const onGestureEvent = Gesture.Pan()
+    .withTestId('line-pan')
     .activeOffsetX(32)
     .activeOffsetY([0, 0])
     .minDistance(0)
@@ -218,6 +219,7 @@ function ChartContent({
     });
 
   const onClampedGestureEvent = Gesture.Pan()
+    .withTestId('stepped-pan')
     .activeOffsetX(32)
     .activeOffsetY([0, 0])
     .minDistance(0)
